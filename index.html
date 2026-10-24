@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="az"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KarYera AI</title>
+<style>
+:root{--bg:#f3f6fc;--card:#fff;--tx:#14213d;--mut:#667085;--pri:#2563eb;--bd:#e3e8f0;--ok:#16a34a;--warn:#f59e0b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1424;--card:#171f35;--tx:#e8ecf6;--mut:#9aa6c0;--bd:#26304d;--pri:#4f86f7}}
+:root[data-theme="dark"]{--bg:#0e1424;--card:#171f35;--tx:#e8ecf6;--mut:#9aa6c0;--bd:#26304d;--pri:#4f86f7}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding:16px}
+.hero{background:linear-gradient(120deg,#2563eb,#7c3aed,#db2777,#2563eb);background-size:300% 300%;animation:gs 10s ease infinite;color:#fff;border-radius:16px;padding:16px;margin-bottom:12px}
+@keyframes gs{50%{background-position:100% 50%}}@media (prefers-reduced-motion:reduce){.hero{animation:none}}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}h1{font-size:22px;margin:0}
+.badge{background:var(--warn);color:#000;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:6px}
+.cred{background:rgba(255,255,255,.2);padding:6px 12px;border-radius:99px;font-weight:700;white-space:nowrap}
+.hero p{margin:8px 0 0;font-size:13px}
+nav,.sn{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px}
+nav button,.sn button{flex:1;min-width:max-content;padding:10px 12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;font-size:14px;cursor:pointer}
+nav button.on,.sn button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:12px}
+.card h3{margin:14px 0 2px;font-size:14px;color:var(--pri)}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font:inherit}
+textarea{min-height:70px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.blk{border:1px dashed var(--bd);border-radius:10px;padding:10px;margin-top:8px}
+.btn{margin-top:14px;width:100%;padding:12px;border:0;border-radius:10px;background:var(--pri);color:#fff;font-weight:600;font-size:15px;cursor:pointer}
+.btn:disabled{opacity:.6}.btn.sec{background:transparent;color:var(--pri);border:1px solid var(--pri)}
+.out{background:var(--bg);border:1px dashed var(--bd);border-radius:10px;padding:12px;margin-top:12px;font-size:14px;white-space:pre-wrap}
+.ai{background:var(--bg);border-left:3px solid var(--pri);padding:10px 12px;border-radius:8px;margin:10px 0;font-size:14px}
+.pk{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px;border:1px solid var(--bd);border-radius:10px;margin-top:8px}
+.pk b{display:block}.pk small,small{color:var(--mut)}.pk button{padding:8px 14px;border:0;border-radius:8px;background:var(--ok);color:#fff;font-weight:600;cursor:pointer}
+.score{font-size:28px;font-weight:700;color:var(--ok)}.hide{display:none}.note{font-size:12px;color:var(--mut);text-align:center}
+.bar{height:8px;background:var(--bd);border-radius:9px;overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;background:var(--ok)}
+.cvdoc{--ac:#2563eb;background:#fff;color:#111;border-radius:10px;padding:20px;font-size:13px;margin-top:12px;border:1px solid var(--bd);overflow-wrap:anywhere}
+.cvdoc h2{margin:0;font-size:22px}.cvdoc .sub{font-weight:600}.cvdoc .ct{font-size:12px;color:#555;margin:4px 0 10px}
+.cvdoc h4{margin:12px 0 4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid #ddd;padding-bottom:3px}
+.cvdoc ul{margin:4px 0;padding-left:18px}.cvdoc p{margin:3px 0}
+.chip{display:inline-block;background:#eef2ff;color:#111;border-radius:99px;padding:2px 9px;margin:2px 3px 2px 0;font-size:12px}
+.ph{width:84px;height:84px;border-radius:50%;object-fit:cover}
+.k1{font-family:Georgia,serif}.k1 .hd{text-align:center}.k1 .ph{margin-bottom:6px}.k1 h4{color:var(--ac);border-color:var(--ac)}
+.k2 .hd{background:var(--ac);color:#fff;margin:-20px -20px 10px;padding:18px 20px;border-radius:10px 10px 0 0;display:flex;justify-content:space-between;align-items:center;gap:10px}.k2 .hd .ct{color:rgba(255,255,255,.85)}.k2 .ph{border-radius:12px;border:3px solid rgba(255,255,255,.6)}.k2 h4{color:var(--ac);border-color:var(--ac)}
+.k3 h2{font-weight:300;letter-spacing:.04em}.k3 h4{border:0;color:var(--ac);font-weight:700}.k3 .sub{color:#555}
+.k4{display:flex;padding:0;overflow:hidden}.k4.r{flex-direction:row-reverse}.k4 .sb{background:var(--ac);color:#fff;width:34%;padding:18px 12px;flex:none}.k4 .sb h2{font-size:17px}.k4 .sb h4{border-color:rgba(255,255,255,.4);color:#fff}.k4 .sb .ph{border:3px solid #fff;display:block;margin:0 auto 8px}.k4 .sb .chip{background:rgba(255,255,255,.22);color:#fff}.k4 .mn{padding:18px 16px;flex:1}.k4 .mn h4{color:var(--ac);border-color:var(--ac)}
+.k5 .hd{display:flex;gap:12px;align-items:center;border-left:8px solid var(--ac);padding-left:12px;margin-bottom:8px}.k5 h2{font-size:26px;line-height:1.1}.k5 .sub{color:var(--ac)}.k5 .ph{border-radius:18px;transform:rotate(-4deg);border:3px solid var(--ac)}.k5 h4{display:inline-block;background:var(--ac);color:#fff;border:0;padding:2px 10px;border-radius:99px}
+.k6{font-family:Arial,sans-serif}.k6 h4{color:#000;border-bottom:2px solid #000}.k6 h2{font-size:20px}
+.gal{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}@media (min-width:560px){.gal{grid-template-columns:repeat(4,1fr)}}
+.gi{background:var(--card);border:2px solid var(--bd);border-radius:12px;padding:6px;cursor:pointer;color:var(--tx);font:inherit}
+.gi.on{border-color:var(--pri);box-shadow:0 0 0 3px rgba(37,99,235,.25)}.gi span{display:block;font-size:13px;margin-top:4px;font-weight:600}
+.thw{position:relative;overflow:hidden;border-radius:8px;border:1px solid var(--bd);background:#fff}
+.thw .cvdoc{position:absolute;top:0;left:0;transform-origin:0 0;margin:0;border:0;border-radius:0;pointer-events:none;width:560px}
+.sw{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}.sw button{width:36px;height:36px;border-radius:50%;border:3px solid transparent;cursor:pointer}.sw button.on{border-color:var(--tx);transform:scale(1.1)}
+.tag{display:inline-block;border-radius:99px;padding:2px 9px;margin:2px 3px 2px 0;font-size:12px;background:var(--bg);border:1px solid var(--bd)}.tag.g{background:#dcfce7;color:#14532d}.tag.r{background:#fee2e2;color:#7f1d1d}
+.ap{display:flex;gap:6px;align-items:center;border:1px solid var(--bd);border-radius:10px;padding:8px;margin-top:6px;font-size:13px}.ap b{flex:1}.ap select{width:auto;padding:4px}.ap button{border:0;background:none;cursor:pointer;color:#dc2626;font-size:16px}
+@media print{body *{visibility:hidden}#cvdoc,#cvdoc *{visibility:visible}#cvdoc{position:absolute;left:0;top:0;width:100%}#cvdoc .cvdoc{border:0;margin:0}}
+</style></head><body><div class="wrap">
+<div class="hero"><div class="top"><h1>🤖 KarYera AI<span class="badge">TEST</span></h1><div class="cred">💎 <span id="cr">10</span> kredit</div></div><p id="tip"></p></div>
+<nav><button class="on" data-t="cv">📄 CV</button><button data-t="mus">🎤 Müsahibə</button><button data-t="ext">✨ Əlavələr</button><button data-t="buy">💎 Kredit</button><button data-t="log">📝 Yeniliklər</button></nav>
+
+<section id="cv" class="card"><b>CV hazırlayan AI</b> <small>(1 kredit, şablon və rəng dəyişmək pulsuz)</small>
+<button class="btn sec" id="demo" type="button">✨ Nümunə məlumatla doldur</button>
+<h3>1. Əlaqə</h3><label>Ad, soyad</label><input id="ad" placeholder="Aysel Məmmədova">
+<label>Şəkil (istəyə bağlı)</label><div style="display:flex;gap:10px;align-items:center"><input type="file" id="pic" accept="image/*"><img id="picp" class="hide" alt="" style="width:48px;height:48px;border-radius:50%;object-fit:cover"></div>
+<div class="row"><div><label>Telefon</label><input id="tel" placeholder="+994 50 000 00 00"></div><div><label>E-poçt</label><input id="em" placeholder="ad@mail.com"></div></div>
+<div class="row"><div><label>Şəhər</label><input id="seh" placeholder="Bakı"></div><div><label>Hədəf vəzifə</label><input id="vez" placeholder="Satış meneceri"></div></div>
+<h3>2. Özünüz haqqında</h3><label>Qısa məqsəd (boş qoysanız AI yazır)</label><textarea id="hq"></textarea>
+<h3>3. Təhsil</h3><div class="row"><div><label>Universitet / məktəb</label><input id="top" placeholder="BDU"></div><div><label>İxtisas, il</label><input id="tix" placeholder="İqtisadiyyat, 2022"></div></div>
+<h3>4. İş təcrübəsi</h3><div id="exps"></div><button class="btn sec" id="addexp" type="button">+ Təcrübə əlavə et</button>
+<h3>5. Bacarıq, dil, sertifikat</h3><label>Bacarıqlar (vergüllə)</label><input id="bac" placeholder="Excel, kommunikasiya, CRM">
+<label>Dillər</label><input id="dil" placeholder="Azərbaycan (ana dili), İngilis (B2)"><label>Kurs / sertifikatlar</label><input id="ser" placeholder="Satış təlimi 2023">
+<button class="btn" id="cvgo">CV-ni yarat (1 kredit)</button><div id="stat" class="ai hide"></div>
+<div id="cvres" class="hide"><div style="margin-top:12px"><b>CV gücü (ATS uyğunluğu): <span id="pct"></span>%</b><div class="bar"><i id="barf"></i></div><div id="tips" style="font-size:13px;color:var(--mut)"></div></div>
+<button class="btn sec" id="rw">✨ Təcrübə bəndlərini AI ilə gücləndir (1 kredit)</button><h3>🎨 Şablon seç (7 şablon)</h3><div id="gal" class="gal"></div><h3>🌈 Rəng seç</h3><div id="sw" class="sw"></div>
+<h3>👁️ Önizləmə</h3><div id="cvdoc"></div>
+<div class="row"><button class="btn sec" id="pr">🖨️ PDF / Çap et</button><button class="btn sec" id="cp">Mətni kopyala</button></div>
+<p class="note">«ATS» şablonu tək sütunlu, şəkilsiz və sadədir: işəgötürən proqramları onu daha yaxşı oxuyur.</p></div></section>
+
+<section id="mus" class="card hide"><b>Müsahibə simulyatoru</b> <small>(sessiya 2 kredit · 5 sual · təkrar cəhd pulsuz)</small>
+<div id="m0"><label>Müsahibə növünü seç</label><select id="mtip"></select><div class="ai" id="mprev"></div>
+<button class="btn" id="mgo">Sessiyaya başla (2 kredit)</button></div>
+<div id="m1" class="hide"><div class="bar"><i id="mbar"></i></div><div class="ai" id="mq"></div>
+<details id="mh"><summary>💡 İpucu: cavabı necə qurmalı?</summary><div class="note" style="text-align:left" id="mhint"></div></details>
+<label>Cavabın</label><textarea id="mans" placeholder="3-4 cümlə yaz: nümunə + nəticə (rəqəmlə)"></textarea>
+<button class="btn sec" id="mic">🎙️ Səslə cavab ver</button><button class="btn" id="mev">Cavabı qiymətləndir</button>
+<div id="mfb" class="out hide"></div>
+<div class="row hide" id="mnav"><button class="btn sec" id="mretry">↻ Yenidən yaz</button><button class="btn" id="mnext">Növbəti sual →</button></div></div>
+<div id="m2" class="hide"></div></section>
+<section id="ext" class="card hide">
+<div class="sn"><button class="on" data-p="p1">✉️ Məktub</button><button data-p="p2">🔗 LinkedIn</button><button data-p="p3">🎯 Vakansiya</button><button data-p="p4">🗺️ Karyera</button><button data-p="p5">📅 Plan</button></div>
+<div id="p1" class="pn"><b>Müraciət məktubu</b> <small>(1 kredit, CV formasından məlumat götürür)</small>
+<div class="row"><div><label>Şirkət</label><input id="csh"></div><div><label>Üslub</label><select id="cton"><option>Rəsmi</option><option>Səmimi</option></select></div></div>
+<label>Vəzifə (boşdursa hədəf vəzifə)</label><input id="cvz"><label>2 əsas üstünlüyünüz (boşdursa CV-dən)</label><input id="cus">
+<button class="btn" id="cgo">Məktubu yaz (1 kredit)</button><div id="cout" class="out hide"></div><button class="btn sec hide" id="ccp">Kopyala</button></div>
+<div id="p2" class="pn hide"><b>LinkedIn profil mətni</b> <small>(1 kredit)</small><p class="note" style="text-align:left">CV bölməsindəki məlumatlardan hazırlanır.</p><button class="btn" id="lgo">Başlıq və Haqqımda yarat</button><div id="lout" class="out hide"></div></div>
+<div id="p3" class="pn hide"><b>CV-ni vakansiyaya uyğunlaşdır</b> <small>(1 kredit)</small><label>Elanın mətnini yapışdır</label><textarea id="vac" style="min-height:120px"></textarea>
+<button class="btn" id="vgo">Analiz et</button><div id="vout" class="hide"></div><button class="btn sec hide" id="vapp">CV-yə tətbiq et (bacarıqlar sıralanır)</button></div>
+<div id="p4" class="pn hide"><b>Karyera yolu</b> <small>(1 kredit)</small><p class="note" style="text-align:left">Bacarıq və təcrübənə görə ən uyğun sahələr.</p><button class="btn" id="kgo">Sahələri göstər</button><div id="kout" class="hide"></div></div>
+<div id="p5" class="pn hide"><b>İş axtarış planı</b> <small>(pulsuz)</small><div class="row"><div><label>Həftəlik müraciət sayı</label><input id="pn1" type="number" value="10" min="1"></div><div><label>Həftəlik öyrənmə (saat)</label><input id="pn2" type="number" value="4" min="0"></div></div>
+<button class="btn" id="pgo">4 həftəlik plan yarat</button><div id="pout" class="out hide"></div>
+<h3>Müraciət izləyicisi</h3><div class="row"><input id="ac" placeholder="Şirkət"><input id="av" placeholder="Vəzifə"></div><button class="btn sec" id="aadd">+ Əlavə et</button><div id="alist"></div></div>
+</section>
+
+<section id="buy" class="card hide"><b>Kredit paketləri</b><div class="ai" id="aibuy">Kreditin bitəndə buradan yeni paket ala bilərsən. Test rejimində ödəniş real deyil.</div>
+<div class="pk"><div><b>5 kredit</b><small>3 manat</small></div><button data-a="5">Al</button></div>
+<div class="pk"><div><b>20 kredit</b><small>9 manat · 40% qənaət</small></div><button data-a="20">Al</button></div>
+<div class="pk"><div><b>50 kredit</b><small>18 manat · ən sərfəli</small></div><button data-a="50">Al</button></div>
+<button class="btn sec" id="inv">👥 Dostunu dəvət et: hər ikiniz 2 kredit qazanın</button></section>
+<section id="log" class="card hide"><b>📝 Yeniliklər və yol xəritəsi</b>
+<h3>Bu versiyada düzəldilənlər</h3>
+<div class="ai">🎤 <b>Müsahibə sadələşdirildi.</b> Əvvəl bir düyməyə 3 fərqli vəzifə verilmişdi (qiymətləndir / növbəti / yeni sessiya). İndi addımlar ayrıdır: növ seç → sualları əvvəlcədən gör → cavab ver → qiymətləndir → növbəti.<br>• Sessiya başlamamış 5 sual görünür.<br>• Sual nömrəsi və irəliləyiş xətti var.<br>• «İpucu» düyməsi cavab çərçivəsini (Situasiya → Hərəkət → Nəticə) göstərir.<br>• Hər cavab 3 meyarla qiymətləndirilir: struktur, konkretlik, nəticə.<br>• «Yenidən yaz» təkrar cəhdi pulsuzdur.<br>• Sonda hər sualın balı və ən zəif cəhət göstərilir.</div>
+<div class="ai">📄 CV: 7 şablon, 7 rəng, çəkili ATS balı, PDF/çap. ✨ Əlavələr: məktub, LinkedIn, vakansiyaya uyğunlaşdırma, karyera yolu, plan və izləyici.</div>
+<div class="ai">🤖 <b>Real AI qoşuldu:</b> müsahibə cavabının mənaca qiymətləndirilməsi və daha güclü cavab nümunəsi, şirkətə xüsusi müraciət məktubu, CV təcrübə bəndlərinin yenidən yazılması. İlk istifadədə icazə soruşula bilər.</div>
+<h3>Bazar araşdırmasından nəticələr</h3>
+<div class="ai">Beynəlxalq alətlər (Teal, Huntr, Careerflow, Rezi və s.) artıq tək CV deyil, bütöv iş axtarış prosesi təklif edir: vakansiyaya uyğunlaşdırma, ATS balı, müraciət izləyicisi, məktub, LinkedIn və müsahibə hazırlığı. Azərbaycan platformaları (Rabota.az, Boss.az, İwvar.az, CVyarat.az) əsasən iş elanı və CV şablonu üzərində qurulub. CVyarat.az-da AI başlıq və açar söz təklifi var. Baxdığım səhifələrdə Azərbaycan dilində AI müsahibə məşqi və vakansiyaya tam uyğunlaşdırma görmədim. KarYera üçün əsas fürsət budur. Bu, məhdud bir axtarışın nəticəsidir, tam bazar təhlili deyil.</div>
+<h3>Yol xəritəsi</h3>
+<div class="out">✅ Var: CV (7 şablon), ATS balı, məktub, LinkedIn, vakansiya uyğunluğu, müsahibə, plan/izləyici.
+
+🔜 Real AI qoşulanda: təcrübə bəndlərini AI-nin yenidən yazması, hər vakansiyaya xüsusi məktub, müsahibədə cavabın mənaca qiymətləndirilməsi və növbəti sualın cavaba görə seçilməsi.
+
+🔜 Növbəti: CV-nin İngilis dilinə tərcüməsi, vakansiya linkini yapışdırıb elanı avtomatik çəkmək, real PDF yükləmə.
+
+💭 Sonra: hesab açıb məlumatı bütün cihazlarda saxlamaq, yerli ödəniş, istifadəçi paylaşılan CV linki.</div></section>
+<p class="note">Test versiya: müsahibə rəyi, məktub və CV bəndləri real AI ilə yazılır (AI əlçatmaz olsa hazır mühərrik işləyir). Ödəniş saxtadır.</p>
+</div>
+<script>
+const $=i=>document.getElementById(i),KEY="karyera_credits_v3",DK="karyera_form_v3",AK="karyera_apps_v3",YEAR=2026;
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ls={g(k){try{return localStorage.getItem(k)}catch(e){return null}},s(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+let credits=10;{const s=ls.g(KEY);if(s!==null&&!isNaN(+s))credits=+s}
+const show=()=>{$("cr").textContent=credits;ls.s(KEY,credits)};
+const TABS=["cv","mus","ext","buy","log"];
+function tab(t){TABS.forEach(x=>$(x).classList.toggle("hide",x!==t));document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t))}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>tab(b.dataset.t));
+document.querySelectorAll(".sn button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".sn button").forEach(x=>x.classList.toggle("on",x===b));document.querySelectorAll(".pn").forEach(p=>p.classList.toggle("hide",p.id!==b.dataset.p))});
+function need(n){if(credits>=n)return true;$("aibuy").textContent="Kreditin bitib 🙂 Davam etmək üçün paket seç: 5 kredit cəmi 3 manatdır. Dostunu dəvət etsən, 2 pulsuz kredit də qazanarsan.";tab("buy");return false}
+function pay(n){if(!need(n))return false;credits-=n;show();return true}
+const SM=async p=>{const r=await fetch("/api/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:p})});if(!r.ok)throw new Error("ai "+r.status);return await r.json()};
+SM.json=async p=>{const o=await SM(p),m=String(o.text).match(/[\[{][\s\S]*[\]}]/);return JSON.parse(m?m[0]:o.text)};
+const aiT=async p=>(await SM(p,{modelTier:"quick",cache:false})).text;
+const F=["ad","tel","em","seh","vez","hq","top","tix","bac","dil","ser"];
+const q=(b,s)=>b.querySelector(s).value.trim();
+function gD(){const d={exps:[]};F.forEach(k=>d[k]=$(k).value.trim());document.querySelectorAll("#exps .blk").forEach(b=>d.exps.push({s:q(b,".es"),v:q(b,".ev"),m:q(b,".em2"),t:q(b,".et")}));return d}
+const skills=d=>d.bac.split(",").map(z=>z.trim()).filter(Boolean);
+const cvText=d=>(F.map(k=>d[k]).join(" ")+" "+d.exps.map(e=>e.s+" "+e.v+" "+e.t).join(" ")).toLowerCase();
+function yrs(d){let n=0;d.exps.forEach(e=>{const m=(e.m||"").match(/(\d{4})\D+(\d{4}|indi|hal)/i);if(m){const a=+m[1],b=/\d/.test(m[2])?+m[2]:YEAR;if(b>=a)n+=b-a}});return n}
+function autoHq(d){const y=yrs(d),sk=skills(d).slice(0,3).join(", ");return (d.vez||"Mütəxəssis")+" — "+(y?y+" illik təcrübə ilə ":"")+"nəticəyönümlü və öyrənməyə açıq mütəxəssis."+(sk?" Əsas güclü tərəfləri: "+sk+".":"")+(d.exps[0]&&d.exps[0].s?" Son iş yeri: "+d.exps[0].s+".":"")+" Konkret hədəflərə çatmağa və komandada effektiv işləməyə fokuslanıram."}
+const bullets=t=>t.split(/[\n;]+|\.\s+|\.$/).map(z=>z.trim()).filter(Boolean);
+function save(){const d=gD();ls.s(DK,JSON.stringify(d))}
+document.querySelector(".wrap").addEventListener("input",save);
+
+/* CV forması */
+let nexp=0;
+function addExp(v){if(nexp>=4)return;nexp++;const d=document.createElement("div");d.className="blk";
+d.innerHTML='<div class="row"><div><label>Şirkət</label><input class="es" placeholder="Şirkət adı"></div><div><label>Vəzifə</label><input class="ev" placeholder="Satış təmsilçisi"></div></div><label>Müddət</label><input class="em2" placeholder="2022-2024"><label>Nə etdiniz? (hər cümlə ayrı bənd olacaq)</label><textarea class="et" placeholder="Müştəri bazasını 30% artırdım. Aylıq hesabat hazırlayırdım."></textarea>';
+$("exps").appendChild(d);if(v){d.querySelector(".es").value=v.s||"";d.querySelector(".ev").value=v.v||"";d.querySelector(".em2").value=v.m||"";d.querySelector(".et").value=v.t||""}if(nexp>=4)$("addexp").classList.add("hide")}
+$("addexp").onclick=()=>addExp();
+{let st=null;try{st=JSON.parse(ls.g(DK))}catch(e){}
+if(st){F.forEach(k=>$(k).value=st[k]||"");(st.exps||[]).forEach(e=>addExp(e))}if(!nexp)addExp()}
+let last=null,photo="",TP="k2",AC="#2563eb";
+const TPL=[["k2","Müasir"],["k4","Yan panel"],["k7","Sağ panel"],["k5","Kreativ"],["k1","Klassik"],["k3","Minimal"],["k6","ATS (sadə)"]];
+const COL=["#2563eb","#059669","#7c3aed","#e11d48","#ea580c","#1f2937","#0891b2"];
+function avatar(d,ac){if(photo)return photo;const i=esc((d.ad||"?").split(/\s+/).map(w=>w.charAt(0)).join("").slice(0,2).toUpperCase());
+return "data:image/svg+xml;utf8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="'+ac+'"/><text x="50" y="62" font-size="38" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="700">'+i+'</text></svg>')}
+function build(d,tp,ac){
+const ctA=[d.tel,d.em,d.seh].filter(Boolean).map(esc),ph='<img class="ph" alt="" src="'+avatar(d,ac)+'">';
+const nm='<h2>'+esc(d.ad||"Ad Soyad")+'</h2><div class="sub">'+esc(d.vez)+'</div>',ct='<div class="ct">'+ctA.join(" · ")+'</div>';
+const about='<h4>Haqqında</h4><p>'+esc(d.hq)+'</p>';
+const edu=(d.top||d.tix)?'<h4>Təhsil</h4><p><b>'+esc(d.top)+'</b>'+(d.tix?'<br>'+esc(d.tix):'')+'</p>':"";
+const ex=d.exps.filter(e=>e.s||e.v||e.t).map(e=>{const b=bullets(e.t).map(z=>"<li>"+esc(z)+"</li>").join("");return "<p><b>"+esc(e.v||"Vəzifə")+"</b> · "+esc(e.s||"Şirkət")+(e.m?" · "+esc(e.m):"")+"</p>"+(b?"<ul>"+b+"</ul>":"")}).join("");
+const exp=ex?'<h4>İş təcrübəsi</h4>'+ex:"";
+const sk=d.bac?'<h4>Bacarıqlar</h4>'+(tp==="k6"?'<p>'+esc(skills(d).join(", "))+'</p>':'<div>'+skills(d).map(z=>'<span class="chip">'+esc(z)+'</span>').join("")+'</div>'):"";
+const lg=d.dil?'<h4>Dillər</h4><p>'+esc(d.dil)+'</p>':"",ce=d.ser?'<h4>Sertifikatlar</h4><p>'+esc(d.ser)+'</p>':"";
+const st='<div class="cvdoc '+(tp==="k7"?"k4 r":tp)+'" style="--ac:'+ac+'">';
+if(tp==="k4"||tp==="k7")return st+'<div class="sb">'+ph+nm+'<h4>Əlaqə</h4>'+ctA.map(c=>'<div>'+c+'</div>').join("")+sk+lg+ce+'</div><div class="mn">'+about+edu+exp+'</div></div>';
+const main=about+exp+edu+sk+lg+ce;
+if(tp==="k2")return st+'<div class="hd"><div>'+nm+ct+'</div>'+ph+'</div>'+main+'</div>';
+if(tp==="k5")return st+'<div class="hd">'+ph+'<div>'+nm+ct+'</div></div>'+main+'</div>';
+if(tp==="k1")return st+'<div class="hd">'+ph+nm+ct+'</div>'+main+'</div>';
+return st+'<div class="hd">'+nm+ct+'</div>'+main+'</div>'}
+function rescale(){document.querySelectorAll(".thw").forEach(w=>{w.firstChild.style.transform="scale("+w.clientWidth/560+")";w.style.height=Math.round(w.clientWidth*1.3)+"px"})}
+window.addEventListener("resize",rescale);
+const big=()=>$("cvdoc").innerHTML=build(last,TP,AC);
+function renderAll(){if(!last)return;
+$("gal").innerHTML=TPL.map(t=>'<button type="button" class="gi'+(t[0]===TP?' on':'')+'" data-t="'+t[0]+'"><div class="thw">'+build(last,t[0],AC)+'</div><span>'+t[1]+'</span></button>').join("");
+document.querySelectorAll(".gi").forEach(b=>b.onclick=()=>{TP=b.dataset.t;document.querySelectorAll(".gi").forEach(x=>x.classList.toggle("on",x===b));big()});big();rescale()}
+$("sw").innerHTML=COL.map((c,i)=>'<button type="button" data-c="'+c+'" class="'+(i===0?'on':'')+'" style="background:'+c+'"></button>').join("");
+document.querySelectorAll("#sw button").forEach(b=>b.onclick=()=>{AC=b.dataset.c;document.querySelectorAll("#sw button").forEach(x=>x.classList.toggle("on",x===b));renderAll()});
+$("pic").onchange=function(){const f=this.files&&this.files[0];if(!f)return;const r=new FileReader();
+r.onload=()=>{const im=new Image();im.onload=()=>{try{const c=document.createElement("canvas");c.width=c.height=240;const m=Math.min(im.width,im.height);c.getContext("2d").drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,240,240);photo=c.toDataURL("image/jpeg",.85);$("picp").src=photo;$("picp").classList.remove("hide");if(last)renderAll()}catch(e){}};im.src=r.result};r.readAsDataURL(f)};
+$("demo").onclick=()=>{const v={ad:"Aysel Məmmədova",tel:"+994 50 123 45 67",em:"aysel@mail.com",seh:"Bakı",vez:"Satış meneceri",top:"Azərbaycan Dillər Universiteti",tix:"Beynəlxalq münasibətlər, 2022",bac:"Excel, müştəri xidməti, danışıqlar, CRM, kommunikasiya, satış",dil:"Azərbaycan (ana dili), İngilis (B2), Rus (B1)",ser:"Satış texnikaları təlimi 2023",hq:""};
+F.forEach(k=>$(k).value=v[k]||"");$("exps").innerHTML="";nexp=0;$("addexp").classList.remove("hide");
+addExp({s:"Delta Market",v:"Satış təmsilçisi",m:"2022-2024",t:"Müştəri bazasını 30% artırdım. Aylıq satış hesabatı hazırlayırdım. 5 yeni əməkdaşı işə uyğunlaşdırdım."});
+addExp({s:"Retail Plus",v:"Kassir-məsləhətçi",m:"2020-2022",t:"Gündəlik 80+ müştəriyə xidmət göstərirdim. Stok hesablamasında iştirak edirdim."});save()};
+function strength(d){const e0=d.exps[0]||{},al=d.exps.map(e=>e.t).join(" "),nb=d.exps.reduce((n,e)=>n+bullets(e.t).length,0);
+const C=[[d.ad,10,"ad"],[d.tel||d.em,10,"əlaqə məlumatı"],[d.vez,5,"hədəf vəzifə"],[d.hq.length>=80,10,"özün yazdığın qısa məqsəd (80+ simvol)"],[d.top||d.tix,10,"təhsil"],[e0.s||e0.t,15,"iş təcrübəsi"],[nb>=3,5,"təcrübədə ən azı 3 bənd"],[/\d/.test(al),10,"təcrübədə rəqəm (məs: 30% artım)"],[skills(d).length>=5,10,"ən azı 5 bacarıq"],[d.dil,5,"dillər"],[d.ser,5,"sertifikatlar"],[photo,5,"şəkil"]];
+return {p:C.reduce((s,c)=>s+(c[0]?c[1]:0),0),miss:C.filter(c=>!c[0]).map(c=>c[2])}}
+$("cvgo").onclick=()=>{const d=gD();if(!d.ad&&!d.vez){alert("Ən azı ad və hədəf vəzifəni yazın.");return}
+const sc=strength(d);if(!pay(1))return;if(!d.hq)d.hq=autoHq(d);
+const st=$("stat"),steps=["🔍 Məlumatlar analiz olunur...","✍️ Təcrübə bəndləri düzülür...","🧩 Bacarıqlar yerləşdirilir...","🎨 7 şablon hazırlanır..."];let i=0;
+st.classList.remove("hide");$("cvres").classList.add("hide");$("cvgo").disabled=true;st.textContent=steps[0];
+const iv=setInterval(()=>{i++;if(i<steps.length){st.textContent=steps[i];return}clearInterval(iv);st.classList.add("hide");$("cvgo").disabled=false;last=d;
+$("pct").textContent=sc.p;$("barf").style.width=sc.p+"%";$("tips").textContent=sc.miss.length?"Gücləndirmək üçün: "+sc.miss.join(", ")+".":"Əla! CV tam doldurulub 🎉";
+$("cvres").classList.remove("hide");renderAll();$("cvres").scrollIntoView({behavior:"smooth",block:"start"})},600)};
+$("rw").onclick=async()=>{if(!last||!need(1))return;if(!SM){$("tips").textContent="AI hazırda əlçatmazdır.";return}
+const old=$("rw").textContent;$("rw").disabled=true;$("rw").textContent="🤖 AI yazır...";
+try{const j=await SM.json("Aşağıdakı iş təcrübəsi mətnlərini peşəkar CV üslubunda yenidən yaz: hər cümlə güclü fəal feli ilə başlasın, qısa və konkret olsun. Mənanı və faktları dəyişmə, yeni rəqəm və ya fakt uydurma. Dil: giriş hansı dildədirsə o dildə. Hər təcrübə üçün bir mətn, cümlələr nöqtə və boşluqla ayrılsın. YALNIZ JSON massiv qaytar. Giriş: "+JSON.stringify(last.exps.map(e=>e.t)),{modelTier:"quick",cache:false});
+if(Array.isArray(j)){let ch=0;j.forEach((x,i)=>{if(typeof x==="string"&&x.trim()&&last.exps[i]&&last.exps[i].t){last.exps[i].t=x.trim();ch++}});if(ch){credits-=1;show();renderAll();$("tips").textContent="✓ Təcrübə bəndləri AI ilə yeniləndi. Faktların düzgünlüyünü yoxla."}}}catch(e){$("tips").textContent="AI cavab vermədi, kredit tutulmadı."}
+$("rw").disabled=false;$("rw").textContent=old};
+$("pr").onclick=()=>{try{window.print()}catch(e){alert("Çap bu pəncərədə açılmadı. Mətni kopyalayıb Word-ə yapışdır.")}};
+$("cp").onclick=()=>{try{navigator.clipboard.writeText($("cvdoc").innerText).then(()=>$("cp").textContent="Kopyalandı ✓")}catch(e){$("cp").textContent="Mətni seçib əl ilə kopyalayın"}};
+const TIPS=["İş axtaranlar üçün AI köməkçi: CV, müsahibə, məktub, LinkedIn, vakansiyaya uyğunlaşdırma.","🎁 Hədiyyə: 10 kredit, təxminən 2 CV, 2 müsahibə və bir neçə əlavə.","💡 CV-də rəqəmlər inandırıcıdır: «satışı 30% artırdım».","🎯 Hər vakansiya üçün CV-ni «Vakansiya» bölməsində uyğunlaşdır."];
+let ti=0;$("tip").textContent=TIPS[0];setInterval(()=>{ti=(ti+1)%TIPS.length;$("tip").textContent=TIPS[ti]},4000);
+
+/* Müsahibə */
+const Q={
+"HR müsahibəsi":{t:"Keçmiş, indi, gələcək formatından istifadə et. Çətin vəziyyətdə STAR: situasiya, vəzifə, hərəkət, nəticə.",q:["Özünüz haqqında danışın.","Niyə məhz bizim şirkətdə işləmək istəyirsiniz?","Ən güclü və ən zəif tərəfiniz nədir?","Çətin bir vəziyyətdən necə çıxdığınızı danışın.","5 il sonra özünüzü harada görürsünüz?"]},
+"Satış":{t:"Rəqəmlərlə danış: satış həcmi, faiz artımı, müştəri sayı. Müştərinin ehtiyacını necə tapdığını göstər.",q:["Çətin müştərini necə razı salardınız?","Satış hədəfinizi necə planlaşdırırsınız?","Rədd cavabı alanda nə edirsiniz?","Bu qələmi mənə 1 dəqiqəyə satın.","Ən yaxşı satışınız hansı olub?"]},
+"Texniki (IT)":{t:"Konkret alətləri və nəticəni qeyd et. Problemi addım-addım izah et.",q:["Ən maraqlı layihənizi izah edin.","Səhvi (bug) necə tapıb düzəldirsiniz?","Yeni texnologiyanı necə öyrənirsiniz?","Komanda ilə Git ilə necə işləmisiniz?","Kodunuzun keyfiyyətini necə təmin edirsiniz?"]},
+"Müştəri xidməti":{t:"Səbir, empatiya və həll yolunu göstər. Real hadisə nümunəsi ver.",q:["Əsəbi müştəri ilə necə rəftar edərdiniz?","Eyni anda bir neçə sorğu gəldikdə nə edirsiniz?","Cavabını bilmədiyiniz sual gəlsə nə edərsiniz?","Sizcə yaxşı xidmət nədir?","Stresə necə dözürsünüz?"]},
+"Yeni məzun (təcrübəsiz)":{t:"Təcrübə yoxdursa, universitet layihələri, könüllü işlər və öyrənmə sürətini önə çıxar.",q:["Təcrübəniz azdır, niyə sizi seçməliyik?","Təhsil dövründə hansı layihədə iştirak etmisiniz?","Bu sahəni niyə seçmisiniz?","Komandada adətən hansı rolu oynayırsınız?","Hansı bacarığı ilk növbədə inkişaf etdirmək istəyirsiniz?"]},
+"İngilis dilində":{t:"Answer in 3-4 sentences, add one concrete example and a result.",q:["Tell me about yourself.","Why should we hire you?","Describe a challenge you overcame.","What are your main strengths?","Where do you see yourself in 3 years?"]},
+"Rəhbər / menecer":{t:"Neçə nəfəri idarə etdin, hansı göstərici necə dəyişdi: komanda, qərar, nəticə.",q:["Komandanızı necə motivasiya edirsiniz?","Komanda üzvü ilə münaqişəni necə həll etmisiniz?","Prioritetləri və vaxtı necə idarə edirsiniz?","Uğursuz olan bir qərarınız və ondan dərsiniz?","Yeni əməkdaşı necə adaptasiya edirsiniz?"]},
+"Marketinq / SMM":{t:"Kampaniya nəticələrini rəqəmlə de: çatım, klik, satış, böyümə faizi. Alətləri qeyd et.",q:["Uğurlu kampaniya nümunəsi göstərin.","Büdcəni kanallar arasında necə bölürsünüz?","Nəticəni hansı göstəricilərlə ölçürsünüz?","Brend üçün kontent planını necə qurursunuz?","Rəqiblərin təhlilini necə aparırsınız?"]},
+"Maaş danışığı":{t:"Bazar araşdırması et, aralıq de, dəyərini nəticələrlə əsaslandır, qapını bağlama.",q:["Maaş gözləntiniz nə qədərdir?","Təklif etdiyimiz maaş gözləntinizdən aşağıdır. Nə deyərsiniz?","Niyə sizə daha çox ödəməliyik?","Maaşdan başqa hansı şərtlər sizin üçün vacibdir?","Əvvəlki iş yerinizdə maaşınız nə qədər idi?"]}};
+Object.keys(Q).forEach(k=>{const o=document.createElement("option");o.textContent=k;$("mtip").appendChild(o)});
+let cat,qi=0,res=[];
+const mt=()=>Q[$("mtip").value];
+function prev(){$("mprev").innerHTML="<b>Bu sessiyada veriləcək suallar:</b><br>"+mt().q.map((x,i)=>(i+1)+". "+esc(x)).join("<br>")}
+$("mtip").onchange=prev;prev();
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function ui(a){$("mev").classList.toggle("hide",!a);$("mic").style.display=a&&SR?"":"none";$("mans").readOnly=!a;$("mfb").classList.toggle("hide",a);$("mnav").classList.toggle("hide",a)}
+function nextQ(){$("mbar").style.width=(qi+1)*20+"%";$("mq").innerHTML="<b>Sual "+(qi+1)+"/5</b><br>"+esc(cat.q[qi]);
+$("mhint").innerHTML="<br>"+esc(cat.t)+"<br><br>Çərçivə: <b>Situasiya</b> (1 cümlə) → <b>Hərəkət</b> (nə etdin) → <b>Nəticə</b> (rəqəmlə).";$("mh").open=false;$("mans").value="";ui(true)}
+$("mgo").onclick=()=>{if(!pay(2))return;cat=mt();qi=0;res=[];$("m0").classList.add("hide");$("m2").classList.add("hide");$("m1").classList.remove("hide");nextQ()};
+$("mic").onclick=()=>{try{const r=new SR();r.lang=$("mtip").value==="İngilis dilində"?"en-US":"az-AZ";$("mic").textContent="🔴 Dinləyirəm...";
+r.onresult=e=>{$("mans").value+=($("mans").value?" ":"")+e.results[0][0].transcript};r.onend=()=>$("mic").textContent="🎙️ Səslə cavab ver";r.onerror=()=>$("mic").textContent="🎙️ Mikrofon icazəsi yoxdur";r.start()}catch(e){$("mic").textContent="Səs bu brauzerdə işləmir"}};
+function ev(a){const w=a.split(/\s+/).length,dg=/\d/.test(a),c=re=>(a.match(re)||[]).length;
+const s=Math.min(10,Math.round(w/12)),e=Math.min(10,c(/nümunə|layihə|məsələn|müştəri|komanda|şirkət|example|project|team|client/gi)*3+(dg?3:0)),r=Math.min(10,c(/nəticə|artır|azal|qazan|çat|nail|uğur|result|increas|achiev|%/gi)*3+(dg?3:0));
+const t=Math.max(1,Math.round(s*.3+e*.35+r*.35)),f=[];
+if(s<6)f.push("• Cavab qısadır: 3-4 cümləyə çatdır.");if(e<6)f.push("• Konkret nümunə əlavə et: hansı layihə, müştəri və ya vəziyyət.");if(r<6)f.push("• Sonda nəticəni rəqəmlə de, məs: satış 20% artdı.");if(!f.length)f.push("• Güclü cavab. Sonda nəticəni bir cümlə ilə yekunla.");
+return {t,s,e,r,f}}
+$("mev").onclick=async()=>{const a=$("mans").value.trim(),fb=$("mfb");
+if(a.split(/\s+/).length<8){fb.classList.remove("hide");fb.textContent="Cavab çox qısadır. Ən azı 2 cümlə yaz.";return}
+$("mev").disabled=true;fb.classList.remove("hide");fb.textContent="🤖 AI cavabını oxuyur...";
+let r=ev(a),mdl="",isAi=false;
+try{const j=await SM.json("Sən təcrübəli HR müsahibəçisisən. Müsahibə növü: "+$("mtip").value+". Namizədin hədəf vəzifəsi: "+(gD().vez||"göstərilməyib")+". Sual: "+cat.q[qi]+"\nNamizədin cavabı: "+a+"\n\nCavabı qiymətləndir. Rəyi Azərbaycan dilində yaz (sual ingilis dilindədirsə ingiliscə). YALNIZ JSON qaytar: {\"s\":struktur 1-10,\"e\":konkretlik 1-10,\"r\":nəticə 1-10,\"f\":[2-3 qısa, konkret təkmilləşdirmə məsləhəti],\"m\":\"namizədin öz faktlarına əsaslanan 3-4 cümləlik daha güclü cavab nümunəsi, yeni fakt və rəqəm uydurma\"}",{modelTier:"quick",cache:false});
+if(j&&j.s&&j.e&&j.r){const cl=x=>Math.max(1,Math.min(10,Math.round(+x)));r={s:cl(j.s),e:cl(j.e),r:cl(j.r),f:(j.f||[]).map(x=>"• "+x)};r.t=cl(r.s*.3+r.e*.35+r.r*.35);mdl=j.m||"";isAi=true}}catch(e){}
+res[qi]=r;ui(false);$("mev").disabled=false;
+fb.innerHTML='<div class="score">'+r.t+'/10</div>'+[["Struktur",r.s],["Konkretlik",r.e],["Nəticə",r.r]].map(x=>x[0]+' <small>'+x[1]+'/10</small><div class="bar"><i style="width:'+x[1]*10+'%"></i></div>').join("")+"<br>"+esc(r.f.join("\n"))+(mdl?'<div class="ai"><b>Daha güclü cavab nümunəsi:</b><br>'+esc(mdl)+'</div>':"")+'<small>'+(isAi?"🤖 AI rəyi":"Əsas rəy (AI əlçatmaz idi)")+'</small>';
+$("mnext").textContent=qi<4?"Növbəti sual →":"Nəticəni gör →"};
+$("mretry").onclick=()=>ui(true);
+$("mnext").onclick=()=>{if(qi<4){qi++;nextQ()}else fin()};
+function fin(){$("m1").classList.add("hide");const av=res.reduce((x,y)=>x+y.t,0)/5,m=k=>res.reduce((x,y)=>x+y[k],0)/5;
+const wk=[["Struktur",m("s")],["Konkretlik",m("e")],["Nəticə",m("r")]].sort((a,b)=>a[1]-b[1])[0][0];
+$("m2").classList.remove("hide");$("m2").innerHTML='<div class="score">'+av.toFixed(1)+'/10</div>'+(av>=8?"Çox yaxşı hazırlıq!":av>=6?"Yaxşıdır, nümunə və rəqəmlərlə daha da gücləndir.":"Hələ məşq lazımdır.")+res.map((r,i)=>'<div class="ap"><b>'+(i+1)+'. '+esc(cat.q[i])+'</b><span>'+r.t+'/10</span></div>').join("")+'<div class="ai">Ən çox gücləndirməli olduğun cəhət: <b>'+wk+'</b>.<br>'+esc(cat.t)+'</div><button class="btn" id="mre">Yeni sessiya (2 kredit)</button>';
+$("mre").onclick=()=>{$("m2").classList.add("hide");$("m0").classList.remove("hide")}}
+
+/* Əlavələr */
+const need1=()=>{const d=gD();if(!d.vez&&!d.bac&&!d.exps[0].t){alert("Əvvəlcə CV bölməsində hədəf vəzifə, bacarıq və ya təcrübə yaz (və ya nümunə məlumatla doldur).");return null}return d};
+function cp(btn,txt){try{navigator.clipboard.writeText(txt).then(()=>btn.textContent="Kopyalandı ✓")}catch(e){btn.textContent="Mətni əl ilə seç"}}
+$("cgo").onclick=async()=>{const d=gD(),vz=$("cvz").value.trim()||d.vez,sh=$("csh").value.trim();if(!vz||!sh){alert("Şirkəti və vəzifəni (və ya CV-də hədəf vəzifəni) yaz.");return}
+if(!pay(1))return;const us=$("cus").value.trim()||skills(d).slice(0,2).join(" və "),y=yrs(d),e0=d.exps[0]||{},b0=bullets(e0.t||"")[0],fm=$("cton").value==="Rəsmi";
+const ad=d.ad||"Ad Soyad";
+const t=(fm?"Hörmətli "+sh+" HR komandası,":"Salam, "+sh+" komandası,")+"\n\n"+vz+" vakansiyası ilə maraqlanıram"+(fm?" və namizədliyimi təqdim etmək istəyirəm.":", elanı oxuyanda dərhal özümü bu rolda gördüm.")+(y?" "+y+" illik təcrübəm ":" Təcrübəm ")+(e0.s?"("+e0.s+" daxil olmaqla) ":"")+"mənə bu vəzifədə dəyər qatmağa imkan verir.\n\n"+(b0?"Əvvəlki işimdə əsas nəticələrimdən biri: "+b0.replace(/\.$/,"")+". ":"")+(us?"Sizə gətirəcəyim əsas üstünlüklər: "+us+". ":"")+"Məqsədim "+sh+" üçün ölçülə bilən nəticə yaratmaq və komandada sürətlə uyğunlaşmaqdır.\n\nMüsahibə üçün istənilən vaxt hazıram"+(d.tel?", mənimlə "+d.tel+" nömrəsi ilə əlaqə saxlaya bilərsiniz":"")+". Diqqətinizə görə təşəkkür edirəm.\n\n"+(fm?"Hörmətlə,":"Təşəkkürlə,")+"\n"+ad;
+$("cout").classList.remove("hide");$("cout").textContent="🤖 AI yazır...";let t2=t;
+try{const dd=Object.assign({},d);t2=await aiT("Aşağıdakı namizəd məlumatı əsasında "+sh+" şirkətinə "+vz+" vəzifəsi üçün Azərbaycan dilində "+(fm?"rəsmi":"səmimi")+" müraciət məktubu yaz. 3 qısa paraqraf, 150-200 söz. Yalnız verilən faktlardan istifadə et, heç nə uydurma. Əsas üstünlüklər: "+us+". Namizəd: "+JSON.stringify(dd)+". Yalnız məktub mətnini qaytar, imza: "+ad)}catch(e){t2=t}
+$("cout").textContent=t2;$("ccp").classList.remove("hide");$("ccp").textContent="Kopyala";$("ccp").onclick=()=>cp($("ccp"),t2)};
+$("lgo").onclick=()=>{const d=need1();if(!d||!pay(1))return;const sk=skills(d),y=yrs(d),e0=d.exps[0]||{};
+const head=(d.vez||"Mütəxəssis")+(sk.length?" | "+sk.slice(0,3).join(" · "):"")+(d.dil?" | "+d.dil.split(",")[0].replace(/\(.*\)/,"").trim()+" dili":"");
+const about=(d.hq||autoHq(d))+"\n\n"+(e0.s?"Hazırda/son olaraq "+e0.s+" şirkətində "+(e0.v||"mütəxəssis")+" kimi çalışmışam. ":"")+(bullets(e0.t||"").slice(0,2).map(z=>"▪ "+z.replace(/\.$/,"")).join("\n"))+"\n\n🎯 Bacarıqlar: "+sk.join(", ")+"\n📩 Əməkdaşlıq və vakansiyalar üçün mənə yaza bilərsiniz.";
+const html="<b>Başlıq (Headline)</b>\n"+head+"\n\n<b>Haqqımda</b>\n"+about+"\n\n<b>3 məsləhət</b>\n• Peşəkar, yaxşı işıqlı şəkil əlavə et.\n• «Bacarıqlar» bölməsinə ən azı 10 açar söz yaz.\n• Hər təcrübəyə 1-2 rəqəmli nəticə əlavə et.";
+$("lout").classList.remove("hide");$("lout").innerHTML=esc(html).replace(/&lt;b&gt;/g,"<b>").replace(/&lt;\/b&gt;/g,"</b>")};
+const STOP=new Set("və ilə üçün bir bu olan olar daha çox ən kimi görə üzrə həm eləcə də the and for with you are our will have from your that this you has not can who all any".split(" "));
+let tailor=null;
+$("vgo").onclick=()=>{const v=$("vac").value.trim();if(v.length<40){alert("Vakansiya elanını yapışdır (ən azı bir neçə cümlə).");return}const d=gD();if(!pay(1))return;
+const f={};v.toLowerCase().replace(/[^a-zəöüçşğıi0-9+#]+/g," ").split(" ").forEach(w=>{if(w.length>=4&&!STOP.has(w)&&!/^\d+$/.test(w))f[w]=(f[w]||0)+1});
+const kw=Object.keys(f).sort((a,b)=>f[b]-f[a]||b.length-a.length).slice(0,14),txt=cvText(d);
+const hit=kw.filter(k=>txt.includes(k.slice(0,Math.min(5,k.length)))),miss=kw.filter(k=>!hit.includes(k)),p=Math.round(hit.length/Math.max(1,kw.length)*100);
+tailor={hit,miss,p};
+$("vout").classList.remove("hide");$("vout").innerHTML='<div class="out"><div class="score">'+p+'% uyğunluq</div><div class="bar"><i style="width:'+p+'%"></i></div><b>CV-də var:</b><br>'+(hit.map(k=>'<span class="tag g">'+esc(k)+'</span>').join("")||"-")+'<br><b>CV-də yoxdur:</b><br>'+(miss.map(k=>'<span class="tag r">'+esc(k)+'</span>').join("")||"-")+'<br><br>💡 Qırmızı sözlərdən real olaraq sənə aid olanları bacarıq və ya təcrübə bəndlərinə əlavə et. Sahib olmadığın bacarığı yazma: müsahibədə yoxlanılır.</div>';
+$("vapp").classList.remove("hide")};
+$("vapp").onclick=()=>{if(!tailor)return;const d=gD(),sk=skills(d),pri=sk.filter(s=>tailor.hit.some(k=>s.toLowerCase().includes(k.slice(0,5)))),rest=sk.filter(s=>!pri.includes(s));
+$("bac").value=pri.concat(rest).join(", ");if(!$("hq").value.trim()&&tailor.hit.length)$("hq").value=autoHq(gD())+" Vakansiyanın tələbləri ilə üst-üstə düşən sahələr: "+tailor.hit.slice(0,4).join(", ")+".";
+save();$("vapp").textContent="Tətbiq olundu ✓ Bacarıqlar yenidən sıralandı. CV bölməsində yenidən yarat.";tab("cv")};
+const FIELDS=[["Satış / biznes inkişafı","satış müştəri danışıq crm hədəf kommunikasiya".split(" "),"CRM alətləri, B2B satış, danışıq texnikaları"],
+["Marketinq / SMM","marketinq smm kontent reklam meta instagram seo təhlil".split(" "),"Meta Ads, Google Analytics, kontent strategiyası"],
+["IT / proqramlaşdırma","python javascript kod git sql proqram html react".split(" "),"Git, SQL, bir proqramlaşdırma dili və portfolio layihəsi"],
+["Maliyyə / mühasibat","excel mühasib maliyyə hesabat vergü büdcə 1c".split(" "),"Excel (ileri), 1C, maliyyə modelləşdirməsi"],
+["Müştəri xidməti","müştəri xidmət dəstək zəng şikayət empatiya kommunikasiya".split(" "),"CRM, ticket sistemləri, stress idarəetməsi"],
+["HR / işə qəbul","hr işə qəbul müsahibə kadr təlim adaptasiya".split(" "),"İşə qəbul alətləri, əmək qanunvericiliyi"],
+["Dizayn","dizayn figma photoshop illustrator canva ui ux".split(" "),"Figma, tipoqrafiya, portfolio"],
+["Layihə idarəetməsi","layihə plan komanda idarə scrum agile jira büdcə".split(" "),"Scrum/Agile, Jira, risk idarəetməsi"],
+["Logistika / təchizat","logistika anbar stok təchizat daşıma satınalma".split(" "),"Stok uçotu, təchizat zənciri, ERP"]];
+$("kgo").onclick=()=>{const d=need1();if(!d)return;if(!pay(1))return;const t=cvText(d);
+const R=FIELDS.map(f=>{const h=f[1].filter(k=>t.includes(k.slice(0,5)));return {n:f[0],h,m:f[1].filter(k=>!h.includes(k)).slice(0,3),p:Math.round(h.length/f[1].length*100),l:f[2]}}).sort((a,b)=>b.p-a.p).slice(0,3);
+$("kout").classList.remove("hide");$("kout").innerHTML=R.map(r=>'<div class="out"><b>'+esc(r.n)+'</b> — '+r.p+'% uyğunluq<div class="bar"><i style="width:'+r.p+'%"></i></div>Hazırda var: '+(r.h.map(k=>'<span class="tag g">'+esc(k)+'</span>').join("")||"-")+'<br>Öyrən: '+esc(r.l)+'</div>').join("")};
+const PLAN=["CV və LinkedIn profilini tamamla, 3 vakansiya üçün CV-ni uyğunlaşdır.","Hər gün müraciət göndər, 5 nəfərlə (tanış, keçmiş həmkar) əlaqə qur.","Müsahibə simulyatorunda 2 sessiya et, öyrəndiyin bacarıq üzrə 1 mini layihə/kurs bitir.","Müraciətlərə follow-up yaz (3-5 gün sonra), nəticələri izləyicidə yenilə, planı düzəlt."];
+$("pgo").onclick=()=>{const n=Math.max(1,+$("pn1").value||10),h=+$("pn2").value||0;
+$("pout").classList.remove("hide");$("pout").textContent=PLAN.map((p,i)=>"📅 Həftə "+(i+1)+"\n• Hədəf: "+n+" müraciət, "+h+" saat öyrənmə\n• "+p).join("\n\n")+"\n\nGündəlik nəticə: həftədə "+n+" müraciət = gündə təxminən "+Math.ceil(n/5)+" müraciət (iş günləri)."};
+let apps=[];try{apps=JSON.parse(ls.g(AK))||[]}catch(e){}
+const ST=["Göndərildi","Cavab gözlənilir","Müsahibə","Təklif","Rədd"];
+function rApps(){ls.s(AK,JSON.stringify(apps));$("alist").innerHTML=apps.map((a,i)=>'<div class="ap"><b>'+esc(a.c)+' <small>'+esc(a.v)+'</small></b><select data-i="'+i+'">'+ST.map(s=>'<option'+(s===a.s?' selected':'')+'>'+s+'</option>').join("")+'</select><button data-d="'+i+'" aria-label="Sil">✕</button></div>').join("")+(apps.length?'<p class="note">Cəmi '+apps.length+' müraciət · '+apps.filter(a=>a.s==="Müsahibə"||a.s==="Təklif").length+' müsahibə/təklif</p>':"");
+document.querySelectorAll("#alist select").forEach(s=>s.onchange=()=>{apps[+s.dataset.i].s=s.value;rApps()});document.querySelectorAll("#alist button").forEach(b=>b.onclick=()=>{apps.splice(+b.dataset.d,1);rApps()})}
+$("aadd").onclick=()=>{const c=$("ac").value.trim();if(!c)return;apps.push({c,v:$("av").value.trim(),s:ST[0]});$("ac").value=$("av").value="";rApps()};rApps();
+
+/* Kredit */
+document.querySelectorAll(".pk button").forEach(b=>b.onclick=()=>{credits+=+b.dataset.a;show();$("aibuy").textContent="Əla! "+b.dataset.a+" kredit əlavə olundu (test rejimi)."});
+$("inv").onclick=()=>{credits+=2;show();$("aibuy").textContent="Dəvət linki hazırdır (test): +2 kredit əlavə olundu."};
+show();
+</script></body></html>
