@@ -145,7 +145,7 @@ textarea{min-height:88px;resize:vertical;line-height:1.5}
 .score p{color:var(--mut)}
 .pv{position:relative;overflow:hidden;border-radius:4px;box-shadow:0 1px 3px rgba(24,32,58,.14),0 12px 32px rgba(24,32,58,.1);background:#fff;margin-top:14px}
 .pv .cv{position:absolute;top:0;left:0;transform-origin:0 0}
-.acts{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:14px}
+.acts{display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-top:14px}
 .fab{display:none}
 @media (max-width:999px){.fab{display:inline-flex;position:fixed;right:16px;bottom:24px;z-index:15;box-shadow:0 8px 24px rgba(24,32,58,.25)}}
 @media (max-width:759px){.fab{bottom:92px}}
@@ -306,7 +306,7 @@ footer.foot button{border:0;background:none;color:var(--ink);text-decoration:und
 .t-monogram .mono{width:96px;height:96px;background:var(--ac);display:grid;place-items:center;font-family:'Unbounded',sans-serif;font-size:34px;font-weight:600;flex:none;overflow:hidden}
 .t-monogram .mono .ph{width:96px;height:96px;border-radius:0}
 .t-monogram .nm{font-family:'Unbounded',sans-serif;font-weight:500;font-size:29px}
-.t-monogram .rl{color:color-mix(in srgb,var(--ac) 45%,#fff)}
+.t-monogram .rl{color:var(--lite)}
 .t-monogram .cols{grid-template-columns:232px 1fr;gap:0;flex:1}
 .t-monogram .sd{background:#F2F3F6;padding:12px 26px 40px}
 .t-monogram .sd p{font-size:12.5px}

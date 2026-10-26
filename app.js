@@ -106,6 +106,10 @@ const LB = {
   en: { about: "Profile", exp: "Experience", edu: "Education", sk: "Skills", lg: "Languages", ce: "Certificates", ct: "Contact" }
 };
 
+function mix(a, b, w) { // w = a-nın payı
+  const h = x => { x = String(x).replace("#", ""); if (x.length === 3) x = x.split("").map(c => c + c).join(""); return [0, 2, 4].map(i => parseInt(x.substr(i, 2), 16) || 0) };
+  const A = h(a), B = h(b); return "#" + A.map((v, i) => Math.round(v * w + B[i] * (1 - w)).toString(16).padStart(2, "0")).join("");
+}
 function parts(d, o) {
   const L = LB[o.lang] || LB.az, sk = list(d.bac);
   const ctItems = [d.tel, d.em, d.seh, d.link].filter(Boolean).map(esc);
@@ -146,7 +150,7 @@ function build(d, o) {
     case "classic": h = `<header class="hd">${p.ph}${p.name}${p.role}${p.ct}</header>${all}`; break;
     default: h = `<header class="hd">${p.name}${p.role}${p.ct}</header>${all}`;
   }
-  const st = `--ac:${o.ac};` + (FONTS[o.font] ? `--cvf:${FONTS[o.font]};` : "");
+  const st = `--ac:${o.ac};--tint:${mix(o.ac, "#ffffff", .11)};--deep:${mix(o.ac, "#000000", .72)};--lite:${mix(o.ac, "#ffffff", .45)};` + (FONTS[o.font] ? `--cvf:${FONTS[o.font]};` : "");
   return `<div class="cv t-${o.tp}" style="${st}">${h}</div>`;
 }
 
@@ -183,7 +187,7 @@ function render() {
   $("#fan").innerHTML = ["creative", S.tp === "creative" ? "modern" : S.tp, "sidebar"].map(t => `<span class="th">${build(d, opts(t))}</span>`).join("");
   $("#tpname").textContent = TPL.find(t => t[0] === S.tp)[1] + " · 12 şablon";
   score(); langNote();
-  $("#pdfnote").textContent = S.paid ? "Bu CV üçün ödənilib: yenidən yükləmək pulsuzdur. Çap pəncərəsində «PDF kimi saxla» seç." : "İlk yükləmə 1 kredit, sonrakılar pulsuz. Çap pəncərəsində «PDF kimi saxla» seç.";
+  $("#pdfnote").textContent = (S.paid ? "Bu CV üçün ödənilib: yenidən yükləmək pulsuzdur." : "İlk yükləmə 1 kredit, sonrakılar pulsuz.") + " İşəgötürən proqramları (ATS) mətni oxusun deyə «Çap et» → «PDF kimi saxla» yolunu da seçə bilərsən.";
   fitAll();
 }
 function score() {
@@ -343,11 +347,36 @@ function printDoc(html) {
   const done = () => { document.body.classList.remove("printing"); $("#printArea").innerHTML = "" };
   setTimeout(() => { try { window.print() } catch (e) { toast("Çap pəncərəsi açılmadı. Mətni kopyalayıb Word-ə yapışdır.") } setTimeout(done, 500) }, 120);
 }
-$("#pdf").onclick = () => {
-  if (isEmpty(S.d)) { toast("Əvvəlcə öz məlumatını yaz və ya «Nümunə ilə doldur» düyməsini bas."); return }
-  if (!S.paid) { if (!need(1)) return; spend(1); S.paid = true; save(); render() }
-  printDoc(build(view(), opts()));
-};
+const H2C = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js", JSPDF = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+const loadJs = src => new Promise((ok, no) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s) });
+let libs;
+const pdfLibs = () => libs || (libs = Promise.all([window.html2canvas || loadJs(H2C), (window.jspdf && window.jspdf.jsPDF) || loadJs(JSPDF)]).catch(e => { libs = null; throw e }));
+async function downloadPdf(html, name, btn) {
+  busy(btn, true, "PDF hazırlanır…");
+  const host = document.createElement("div");
+  try {
+    await pdfLibs(); if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    host.style.cssText = "position:fixed;left:-10000px;top:0;width:794px;background:#fff"; host.innerHTML = html; document.body.appendChild(host);
+    await new Promise(r => setTimeout(r, 60));
+    const c = await html2canvas(host.firstElementChild, { scale: 2, backgroundColor: "#ffffff", useCORS: true, logging: false, windowWidth: 794 });
+    const pdf = new window.jspdf.jsPDF({ unit: "mm", format: "a4", compress: true }), pageH = Math.floor(c.width * 297 / 210);
+    for (let y = 0, i = 0; y < c.height - 8; y += pageH, i++) {
+      const h = Math.min(pageH, c.height - y), pc = document.createElement("canvas"); pc.width = c.width; pc.height = pageH;
+      const x = pc.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, pc.width, pc.height); x.drawImage(c, 0, y, c.width, h, 0, 0, c.width, h);
+      if (i) pdf.addPage(); pdf.addImage(pc.toDataURL("image/jpeg", .92), "JPEG", 0, 0, 210, 297);
+    }
+    pdf.save(name); return true;
+  } catch (e) { toast("PDF yaradıla bilmədi. «Çap et» düyməsi ilə «PDF kimi saxla» seç."); return false }
+  finally { host.remove(); busy(btn, false) }
+}
+const fname = (suf) => ((S.d.ad || "KarYera").trim().replace(/\s+/g, "_").replace(/[^\p{L}\p{N}_-]/gu, "") || "KarYera") + "_" + suf + ".pdf";
+function payCv() {
+  if (isEmpty(S.d)) { toast("Əvvəlcə öz məlumatını yaz və ya «Nümunə ilə doldur» düyməsini bas."); return false }
+  if (!S.paid) { if (!need(1)) return false; spend(1); S.paid = true; save(); render() }
+  return true;
+}
+$("#dl").onclick = () => { if (payCv()) downloadPdf(build(view(), opts()), fname(S.lang === "en" && useEn() ? "Resume" : "CV"), $("#dl")) };
+$("#pdf").onclick = () => { if (payCv()) printDoc(build(view(), opts())) };
 $("#copy").onclick = () => { const cv = $("#pv .cv"); if (cv) copyText($("#copy"), cv.innerText) };
 $("#fab").onclick = () => $("#pvcol").scrollIntoView({ behavior: "smooth", block: "start" });
 
@@ -487,6 +516,7 @@ $("#lgo").onclick = async () => {
   if (window.innerWidth < 1000) $("#lres").scrollIntoView({ behavior: "smooth" });
 };
 $("#lpdf").onclick = () => printDoc(letterDoc(lt.text));
+$("#ldl").onclick = () => downloadPdf(letterDoc(lt.text), fname("Mektub"), $("#ldl"));
 $("#lcp").onclick = () => copyText($("#lcp"), lt.text);
 
 /* --- LinkedIn --- */
