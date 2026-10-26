@@ -19,13 +19,13 @@ function copyText(btn, txt) {
 }
 
 /* ---------- kredit ---------- */
-let credits = 10;
+let credits = 3; // yeni istifadəçiyə hədiyyə
 { const v = ls.g("karyera_credits_v4") ?? ls.g("karyera_credits_v3"); if (v !== null && !isNaN(+v)) credits = +v }
 const showCr = () => { $("#cr").textContent = credits; ls.s("karyera_credits_v4", credits) };
 function need(n) {
   if (credits >= n) return true;
   const m = $("#buymsg"); m.hidden = false;
-  m.textContent = "Kredit çatmır: bu əməliyyat " + n + " kredit tələb edir. Paket seç və ya dostunu dəvət et.";
+  m.textContent = "Kredit çatmır: bu əməliyyat " + n + " kredit tələb edir. Paket seç: kartla ödə, çeki yüklə, kredit dərhal əlavə olunsun.";
   tab("buy"); return false;
 }
 const spend = n => { credits -= n; showCr() };
@@ -585,8 +585,61 @@ $("#aadd").onclick = () => { const c = $("#ac").value.trim(); if (!c) { toast("�
 rApps();
 
 /* ============================================================ Kredit */
-$$(".pack button").forEach(b => b.onclick = () => { credits += +b.dataset.a; showCr(); const m = $("#buymsg"); m.hidden = false; m.textContent = b.dataset.a + " kredit əlavə olundu (test rejimi)." });
-$("#inv").onclick = () => { credits += 2; showCr(); const m = $("#buymsg"); m.hidden = false; m.textContent = "Dəvət linki hazırdır (test): +2 kredit əlavə olundu."; window.scrollTo({ top: 0, behavior: "smooth" }) };
+const PAY_CARD = "4169 7388 7498 7534";
+const PACKS = { p5: [5, 3], p20: [20, 9], p50: [50, 18] };
+let pk = "p20", rcptB64 = "";
+$("#cardno").textContent = PAY_CARD; $("#last4").textContent = PAY_CARD.slice(-4);
+$("#cpcard").onclick = () => copyText($("#cpcard"), PAY_CARD.replace(/\s/g, ""));
+$("#packs").addEventListener("click", e => {
+  const b = e.target.closest(".pack"); if (!b) return; pk = b.dataset.p;
+  $$("#packs .pack").forEach(x => x.classList.toggle("on", x === b));
+  $("#payamt").textContent = PACKS[pk][1] + " manat"; $("#paybox").hidden = false; $("#rres").innerHTML = "";
+  $("#paybox").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+function loadRcpt(f) {
+  if (!f || !/^image\//.test(f.type)) { toast("Şəkil faylı seç (JPG, PNG)."); return }
+  const r = new FileReader();
+  r.onload = () => {
+    const im = new Image();
+    im.onload = () => {
+      const k = Math.min(1, 1600 / Math.max(im.width, im.height)), c = document.createElement("canvas");
+      c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+      const url = c.toDataURL("image/jpeg", .85); rcptB64 = url.split(",")[1];
+      $("#rcptp").src = url; $("#rcptp").hidden = false; $("#rcptt").textContent = "Başqa şəkil seç"; $("#rsend").disabled = false; $("#rres").innerHTML = "";
+    };
+    im.onerror = () => toast("Şəkli açmaq alınmadı, başqa fayl sına.");
+    im.src = r.result;
+  };
+  r.readAsDataURL(f);
+}
+$("#rcpt").onchange = function () { loadRcpt(this.files && this.files[0]) };
+const drop = $("#drop");
+["dragover", "dragenter"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over") }));
+["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over") }));
+drop.addEventListener("drop", e => loadRcpt(e.dataTransfer.files && e.dataTransfer.files[0]));
+let pays = []; try { pays = JSON.parse(ls.g("karyera_pays")) || [] } catch (e) { }
+function rPays() {
+  $("#phist").hidden = !pays.length;
+  $("#phlist").innerHTML = pays.slice().reverse().map(p => `<div class="res-row"><span>${esc(p.date)} ${esc(p.time)} · ${esc(p.amount)} AZN <span class="hint">${esc(p.id)}</span></span><b>+${p.credits}</b></div>`).join("");
+}
+rPays();
+$("#rsend").onclick = async () => {
+  if (!rcptB64) { toast("Əvvəlcə çekin şəklini seç."); return }
+  const b = $("#rsend"), out = $("#rres"); busy(b, true, "Çek yoxlanılır…"); out.innerHTML = "";
+  try {
+    const r = await fetch("/api/receipt", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pack: pk, image: rcptB64, contact: $("#rcon").value.trim() }) });
+    const j = await r.json().catch(() => ({ ok: false, reason: "Server cavab vermədi. Bir az sonra yenidən sına." }));
+    if (j.ok) {
+      if (pays.some(p => p.key === j.key)) { out.innerHTML = `<div class="bad-box">Bu çek artıq istifadə olunub.</div>`; return }
+      credits += j.credits; showCr();
+      pays.push({ id: j.id, key: j.key, date: j.date, time: j.time, amount: j.amount, credits: j.credits }); ls.s("karyera_pays", JSON.stringify(pays)); rPays();
+      out.innerHTML = `<div class="ok-box"><b>+${j.credits} kredit əlavə olundu.</b><br>Çek: ${esc(j.date)} ${esc(j.time)}, ${esc(j.amount)} AZN. Qəbz nömrəsi: ${esc(j.id)}</div>`;
+      rcptB64 = ""; $("#rcptp").hidden = true; $("#rcptt").textContent = "Şəkli seç və ya bura at"; $("#rcpt").value = "";
+    } else out.innerHTML = `<div class="bad-box"><b>Kredit verilmədi.</b><br>${esc(j.reason || "Çek qəbul olunmadı.")}${j.id ? `<br><span class="hint">Müraciət nömrəsi: ${esc(j.id)}</span>` : ""}</div>`;
+  } catch (e) { out.innerHTML = `<div class="bad-box">Bağlantı xətası. İnterneti yoxla və yenidən sına.</div>` }
+  finally { busy(b, false); $("#rsend").disabled = !rcptB64 }
+};
 
 /* ============================================================ start */
 showCr(); fillForm(); render();

@@ -16,7 +16,7 @@
 <header class="top">
   <a class="brand" href="#" data-go="cv"><span class="seed" aria-hidden="true"></span>KarYera</a><span class="beta">test</span>
   <div class="spacer"></div>
-  <button class="cred" data-go="buy" type="button" aria-label="Kreditlər"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1l6 5-6 9-6-9z" fill="currentColor"/></svg><b id="cr">10</b> kredit</button>
+  <button class="cred" data-go="buy" type="button" aria-label="Kreditlər"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1l6 5-6 9-6-9z" fill="currentColor"/></svg><b id="cr">3</b> kredit</button>
 </header>
 
 <nav class="tabs" aria-label="Bölmələr">
@@ -190,22 +190,57 @@
 
 <!-- ================= Kredit ================= -->
 <section id="buy" hidden>
-  <div class="pane-h"><h2>Kredit paketləri</h2><p>Test rejimi: ödəniş real deyil, kredit bu brauzerdə saxlanır.</p></div>
+  <div class="pane-h"><h2>Kredit al</h2><p>Paketi seç, məbləği karta köçür, çekin şəklini yüklə: çek yoxlanılır və kredit dərhal hesabına əlavə olunur.</p></div>
   <div class="msg" id="buymsg" hidden></div>
-  <div class="packs">
-    <div class="pack"><span class="amt">5</span><span>kredit</span><span class="muted">3 manat</span><button class="btn ghost" data-a="5" type="button">Al</button></div>
-    <div class="pack best"><span class="amt">20</span><span>kredit</span><span class="muted">9 manat, 40% qənaət</span><button class="btn" data-a="20" type="button">Al</button></div>
-    <div class="pack"><span class="amt">50</span><span>kredit</span><span class="muted">18 manat, ən sərfəli</span><button class="btn ghost" data-a="50" type="button">Al</button></div>
+  <div class="packs" id="packs">
+    <button class="pack" type="button" data-p="p5"><span class="amt">5</span><span>kredit</span><span class="muted">3 manat</span></button>
+    <button class="pack best" type="button" data-p="p20"><span class="amt">20</span><span>kredit</span><span class="muted">9 manat, 40% qənaət</span></button>
+    <button class="pack" type="button" data-p="p50"><span class="amt">50</span><span>kredit</span><span class="muted">18 manat, ən sərfəli</span></button>
   </div>
+
+  <div class="paybox" id="paybox" hidden>
+    <div class="card">
+      <div class="step"><span class="n">1</span><div>
+        <b>Bu karta <span id="payamt">9 manat</span> köçür</b>
+        <div class="cardno"><span id="cardno"></span><button class="btn ghost sm" type="button" id="cpcard">Kopyala</button></div>
+        <p class="hint">Bankının tətbiqində «Kartdan karta» köçürmə et. Məbləğ paketdən az olmasın.</p>
+      </div></div>
+      <div class="step"><span class="n">2</span><div>
+        <b>Çekin şəklini yüklə</b>
+        <p class="hint">Çekdə bunlar görünməlidir: <b>dəqiq tarix və saat</b>, məbləğ, alıcı kartın son 4 rəqəmi (<span id="last4"></span>) və «uğurlu» statusu. Son 48 saatın çeki qəbul olunur.</p>
+        <label class="drop" id="drop"><input type="file" id="rcpt" accept="image/*"><img id="rcptp" alt="" hidden><span id="rcptt">Şəkli seç və ya bura at</span></label>
+        <label class="mt">Telefon və ya e-poçt (problem olsa əlaqə üçün)<input id="rcon" placeholder="+994 50 000 00 00"></label>
+        <button class="btn wide mt" id="rsend" type="button" disabled>Çeki göndər və krediti al</button>
+        <div id="rres" class="mt"></div>
+      </div></div>
+    </div>
+    <div class="card sample">
+      <b>Nümunə çek</b>
+      <p class="hint">Belə çekin skrinşotu uyğundur. Qırmızı ilə işarələnən sahələr mütləq görünməlidir.</p>
+      <div class="rc">
+        <div class="rc-h">Köçürmə uğurla icra olundu</div>
+        <div class="rc-r hl"><span>Tarix və saat</span><b>27.10.2026, 14:35</b></div>
+        <div class="rc-r hl"><span>Məbləğ</span><b>9.00 AZN</b></div>
+        <div class="rc-r"><span>Göndərən</span><b>5522 •••• •••• 1043</b></div>
+        <div class="rc-r hl"><span>Alıcı kart</span><b>4169 •••• •••• 7534</b></div>
+        <div class="rc-r"><span>Əməliyyat №</span><b>884213097</b></div>
+        <div class="rc-r hl"><span>Status</span><b>Uğurlu</b></div>
+      </div>
+      <p class="hint mt">Saatı kəsilmiş, bulanıq və ya redaktə olunmuş çek qəbul edilmir.</p>
+    </div>
+  </div>
+
+  <div class="card mt" id="phist" hidden><b>Ödənişlərim</b><div id="phlist"></div></div>
+
   <div class="card mt">
     <b>Kredit nəyə gedir</b>
     <ul class="hint" style="margin:8px 0 0;padding-left:18px">
+      <li>Yeni istifadəçiyə hədiyyə: 3 kredit</li>
       <li>CV-nin ilk PDF yükləməsi və ya çapı: 1 (sonrakılar pulsuz)</li>
       <li>AI: «Haqqında» variantları, bəndlərin gücləndirilməsi, EN tərcümə, məktub, LinkedIn: hər biri 1</li>
       <li>Müsahibə sessiyası: 2 · Vakansiya analizi və karyera yolu: 1</li>
       <li>AI cavab verməsə kredit tutulmur</li>
     </ul>
-    <button class="btn ghost mt" id="inv" type="button">Dostunu dəvət et: ikiniz də 2 kredit qazanın</button>
   </div>
 </section>
 
@@ -226,14 +261,15 @@
       <li>Müsahibə: vakansiya elanına görə AI sualları.</li>
       <li>Müraciət izləyicisi lövhə (kanban) formatında.</li>
       <li>Telefonda aşağı menyu, qaranlıq rejim.</li>
+      <li>Kartdan karta ödəniş: çeki yüklə, AI tarix-saatı, məbləği və alıcı kartı yoxlayır, kredit dərhal əlavə olunur.</li>
     </ul>
     <h3>Növbəti</h3>
-    <ul><li>Real ödəniş (yerli kart)</li><li>Hesab: məlumatı bütün cihazlarda saxlamaq</li><li>Paylaşılan CV linki</li></ul>
+    <ul><li>Onlayn kartla ödəniş (çeksiz)</li><li>Hesab: məlumatı bütün cihazlarda saxlamaq</li><li>Paylaşılan CV linki</li></ul>
   </div>
 </section>
 </main>
 
-<footer class="foot">Test versiya · ödəniş saxtadır · <button type="button" data-go="log">Yeniliklər</button></footer>
+<footer class="foot">Kredit bu brauzerdə saxlanır · <button type="button" data-go="log">Yeniliklər</button></footer>
 </div>
 
 <div id="printArea"></div>
