@@ -15,8 +15,9 @@ function limited(req, max) {
   return false;
 }
 
-async function callGemini(key, prompt, file, maxTokens) {
+async function callGemini(key, prompt, file, maxTokens, json) {
   const parts = [{ text: prompt }];
+  let last = { ok: false, status: 404, message: "Heç bir model tapılmadı: " + MODELS.join(", ") };
   if (file) parts.push({ inline_data: { mime_type: file.mime, data: file.data } });
   for (const m of MODELS) {
     const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + m + ":generateContent", {
@@ -24,16 +25,18 @@ async function callGemini(key, prompt, file, maxTokens) {
       headers: { "content-type": "application/json", "x-goog-api-key": key },
       body: JSON.stringify({
         contents: [{ role: "user", parts }],
-        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 },
+        generationConfig: Object.assign({ maxOutputTokens: maxTokens, temperature: json ? 0.2 : 0.7 }, json ? { responseMimeType: "application/json" } : {}),
       }),
     });
-    if (r.status === 404) continue; // model adı tapılmadı, növbətini sına
     const j = await r.json().catch(() => ({}));
-    if (!r.ok) return { ok: false, status: r.status, model: m, message: (j.error && j.error.message) || "" };
-    const out = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
-    return { ok: true, model: m, text: out.map((p) => p.text || "").join("") };
+    // 404: model adı yoxdur; 429/500/503: limit və ya yüklənmə — növbəti modeli sına (hər modelin öz limiti var)
+    if (!r.ok) { last = { ok: false, status: r.status, model: m, message: (j.error && j.error.message) || "" }; if ([404, 429, 500, 503].includes(r.status)) continue; return last; }
+    const c = (j.candidates && j.candidates[0]) || {};
+    const text = ((c.content && c.content.parts) || []).map((p) => (p.thought ? "" : p.text || "")).join("");
+    if (!text) { last = { ok: false, status: 502, model: m, message: "Boş cavab (" + (c.finishReason || (j.promptFeedback && j.promptFeedback.blockReason) || "?") + ")" }; continue; }
+    return { ok: true, model: m, text, finish: c.finishReason || "" };
   }
-  return { ok: false, status: 404, message: "Heç bir model tapılmadı: " + MODELS.join(", ") };
+  return last;
 }
 
 export default async function handler(req, res) {
@@ -63,12 +66,13 @@ export default async function handler(req, res) {
     if (data.length > 4_000_000) return res.status(400).json({ error: "Fayl çox böyükdür (maksimum ~3 MB)" }); // Vercel sorğu limiti 4.5 MB
     file = { mime, data };
   }
-  const maxTokens = Math.min(4096, Math.max(256, +b.max || 2048));
+  // Qeyd: yeni Gemini modellərində «düşünmə» tokenləri də bu limitdən yeyir, ona görə fayl oxuma üçün limit böyükdür
+  const maxTokens = Math.min(file ? 12000 : 8192, Math.max(256, +b.max || 2048));
 
   try {
-    const out = await callGemini(key, prompt, file, maxTokens);
-    if (!out.ok) return res.status(502).json({ error: "AI xətası", status: out.status, message: out.message });
-    return res.status(200).json({ text: out.text });
+    const out = await callGemini(key, prompt, file, maxTokens, !!b.json);
+    if (!out.ok) return res.status(out.status === 429 ? 429 : 502).json({ error: out.status === 429 ? "limit" : "AI xətası", status: out.status, message: out.message });
+    return res.status(200).json({ text: out.text, finish: out.finish });
   } catch (e) {
     return res.status(500).json({ error: "Server xətası" });
   }

@@ -29,6 +29,19 @@ function need(n) {
   tab("buy"); return false;
 }
 const spend = n => { credits -= n; showCr(); if (window.KYHook) KYHook.spend(n) };
+/* hədiyyə kodu: ?kod=XXXX — kodun özü yox, yalnız SHA-256 izi saxlanır; hər kod bu brauzerdə 1 dəfə */
+const GIFTS = { "251825dfe09cba2443cc0f90dbd8b4db41423a374575151e3213bc45c5e604c0": 8 };
+(async () => {
+  let k = ""; try { k = new URLSearchParams(location.search).get("kod") || "" } catch (e) { }
+  if (!k || !(window.crypto && crypto.subtle)) return;
+  try { history.replaceState(null, "", location.pathname + location.hash) } catch (e) { }
+  const h = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(k.trim())))].map(b => b.toString(16).padStart(2, "0")).join("");
+  const n = GIFTS[h]; if (!n) { toast("Kod etibarsızdır."); return }
+  let used = []; try { used = JSON.parse(ls.g("karyera_gifts")) || [] } catch (e) { }
+  if (used.includes(h)) { toast("Bu kod artıq istifadə olunub."); return }
+  used.push(h); ls.s("karyera_gifts", JSON.stringify(used));
+  credits = Math.max(credits, n); showCr(); toast("Hədiyyə: balans " + credits + " kredit oldu.", 6000);
+})();
 
 /* ---------- AI ---------- */
 async function ai(p) {

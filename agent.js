@@ -7,12 +7,13 @@
   const words = s => String(s || "").toLocaleLowerCase("az").split(/[^a-zəöüçşğıi0-9+#]+/).filter(w => w.length > 2);
   const KY = { cfg: null, sb: null, user: null, token: "", t1: 0, t2: 0 };
 
-  async function aiX(prompt, { file, max } = {}) {
-    const r = await fetch("/api/ai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt, file, max }) });
+  async function aiX(prompt, { file, max, json } = {}) {
+    const r = await fetch("/api/ai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt, file, max, json }) });
     const j = await r.json().catch(() => ({}));
+    if (r.status === 429) throw new Error("limit");
     if (!r.ok || !j.text) throw new Error(j.error || ("ai " + r.status));
-    const m = j.text.match(/[\[{][\s\S]*[\]}]/);
-    return JSON.parse(m ? m[0] : j.text);
+    const t = j.text.replace(/```(?:json)?/gi, ""), m = t.match(/[\[{][\s\S]*[\]}]/);
+    try { return JSON.parse(m ? m[0] : t) } catch (e) { throw new Error(j.finish === "MAX_TOKENS" ? "uzun" : "json") }
   }
   const toB64 = blob => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.onerror = no; r.readAsDataURL(blob) });
 
@@ -278,28 +279,53 @@ Vakansiya: ${JSON.stringify({ basliq: it.title, sirket: it.company, metn: text.s
     } catch (e) { $("#vstat").textContent = "Mikrofona icazə verilmədi. Brauzerin ünvan sətrindən mikrofonu aç."; }
   };
   dlgV.addEventListener("close", stopRec);
-  async function profileFromFile(blob, mime, kind, btn) {
+  const FERR = {
+    boyuk: "Fayl çox böyükdür (maksimum ~3 MB).",
+    limit: "AI-nin pulsuz limiti bu an dolub. 1-2 dəqiqə sonra yenidən sına, kredit tutulmadı.",
+    bos: "Faylda CV məlumatı tapılmadı (boş və ya oxunmaz səhifə). Başqa fayl və ya aydın şəkil sına, kredit tutulmadı.",
+    metn: "Word faylından mətn çıxmadı. Faylı PDF kimi saxlayıb yüklə, kredit tutulmadı."
+  };
+  // blob: fayl/səs; text: Word-dan çıxarılmış mətn (fayl göndərilmir)
+  async function profileFromFile(blob, mime, kind, btn, text) {
     if (!isEmpty(S.d) && !confirm("CV formasındakı məlumat yenisi ilə əvəz olunsun?")) return;
     if (!need(2)) { dlgV.open && dlgV.close(); return }
     busy(btn, true, kind === "audio" ? "Dinlənilir…" : "Oxunur…");
     try {
-      const data = await toB64(blob);
-      if (data.length > 4_000_000) throw new Error("boyuk");
-      const j = await aiX((kind === "audio" ? "Bu səs yazısında namizəd özü haqqında danışır (Azərbaycan dilində, bəzən rus və ya ingilis sözləri ilə). Danışılanları CV məlumatına çevir. " : "Bu fayl namizədin köhnə CV-sidir. Ondan bütün məlumatı çıxar. ") + PROFILE_JSON, { file: { mime, data }, max: 3000 });
+      const head = kind === "audio" ? "Bu səs yazısında namizəd özü haqqında danışır (Azərbaycan dilində, bəzən rus və ya ingilis sözləri ilə). Danışılanları CV məlumatına çevir. " : "Bu, namizədin köhnə CV-sidir (istənilən dildə ola bilər). Ondan bütün məlumatı çıxar, ən son 5 iş yerini götür. ";
+      let opt = { max: 8192, json: true };
+      if (text != null) text = String(text).replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim().slice(0, 10000);
+      else { const data = await toB64(blob); if (data.length > 4_000_000) throw new Error("boyuk"); opt.file = { mime, data } }
+      const j = await aiX(head + PROFILE_JSON + (text != null ? "\n\nCV MƏTNİ:\n" + text : ""), opt);
       applyProfile(j); spend(2);
       if (dlgV.open) dlgV.close();
       tab("cv"); toast("CV forması dolduruldu. Hər sahəni yoxla, sonra şablon seç.", 6000);
     } catch (e) {
-      const msg = String(e && e.message) === "boyuk" ? "Fayl çox böyükdür (maksimum ~3 MB)." : "Məlumatı çıxarmaq alınmadı, kredit tutulmadı. Daha aydın səs və ya fayl sına.";
-      if (dlgV.open) $("#vnote").textContent = msg; else toast(msg);
+      const k = String(e && e.message);
+      const msg = FERR[k] || (k === "uzun" ? "CV çox uzundur, AI hamısını yaza bilmədi. Bir də sına və ya qısa versiyanı yüklə, kredit tutulmadı." : "Məlumatı çıxarmaq alınmadı, kredit tutulmadı. Bir də sına və ya daha aydın fayl seç.");
+      if (dlgV.open) $("#vnote").textContent = msg; else toast(msg, 7000);
     } finally { busy(btn, false) }
+  }
+  const MAMMOTH = "https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js";
+  async function docxText(f) {
+    if (!window.mammoth) await new Promise((ok, no) => { const sc = document.createElement("script"); sc.src = MAMMOTH; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc) });
+    const r = await window.mammoth.extractRawText({ arrayBuffer: await f.arrayBuffer() });
+    return (r && r.value) || "";
   }
   $("#vsend").onclick = () => recBlob && profileFromFile(recBlob, recBlob.type || "audio/webm", "audio", $("#vsend"));
   $("#oldcv").onclick = () => $("#oldf").click();
   $("#oldf").onchange = async function () {
     const f = this.files && this.files[0]; this.value = ""; if (!f) return;
-    if (f.type === "application/pdf") { if (f.size > 2_900_000) { toast("PDF çox böyükdür (maksimum ~3 MB)."); return } return profileFromFile(f, "application/pdf", "file", $("#oldcv")) }
-    if (!/^image\//.test(f.type)) { toast("PDF və ya şəkil faylı seç."); return }
+    // Android və bəzi brauzerlər faylın növünü boş və ya «octet-stream» göndərir — uzantıya da bax
+    const ext = (f.name.match(/\.([a-z0-9]+)$/i) || [, ""])[1].toLowerCase(), ty = (f.type || "").toLowerCase();
+    if (ty === "application/pdf" || ext === "pdf") { if (f.size > 2_900_000) { toast("PDF çox böyükdür (maksimum ~3 MB)."); return } return profileFromFile(f, "application/pdf", "file", $("#oldcv")) }
+    if (ext === "docx" || ty.includes("wordprocessingml")) {
+      let t = ""; try { t = await docxText(f) } catch (e) { }
+      if (t.trim().length < 40) { toast(FERR.metn, 7000); return }
+      return profileFromFile(null, "", "file", $("#oldcv"), t);
+    }
+    if (ext === "doc" || ty === "application/msword") { toast("Köhnə .doc formatı oxunmur. Word-da «Save as» → .docx və ya PDF seçib yüklə.", 7000); return }
+    if (/^(heic|heif)$/.test(ext) || /hei[cf]/.test(ty)) { toast("iPhone HEIC şəkli oxunmur. Ekran şəkli çək (screenshot) və onu yüklə.", 7000); return }
+    if (!/^image\//.test(ty) && !/^(jpe?g|png|webp|gif|bmp)$/.test(ext)) { toast("PDF, Word (.docx) və ya şəkil faylı seç."); return }
     const url = URL.createObjectURL(f), im = new Image();
     im.onload = () => {
       const k = Math.min(1, 2000 / Math.max(im.width, im.height)), c = document.createElement("canvas");
