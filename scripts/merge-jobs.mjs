@@ -1,13 +1,13 @@
 // Elan bazasını yeniləyir: node scripts/merge-jobs.mjs raw.json [data/jobs.json]
 // raw.json: [{ "source": "HelloJob.az", "remote": false, "ok": true, "items": [{ "title", "company", "url", "date", "location" }] }, ...]
 // Qaydalar: yeni elan əlavə olunur; görülən elanın last_seen yenilənir;
-// uğurla oxunan mənbədə 36 saatdır görünməyən və ya 30 gündən köhnə elan silinir.
+// uğurla oxunan mənbədə 3 gündür (72 saat) görünməyən və ya 30 gündən köhnə elan silinir.
 import fs from "node:fs";
 import crypto from "node:crypto";
 
 const [, , RAW = "raw.json", OUT = new URL("../data/jobs.json", import.meta.url).pathname] = process.argv;
 const NOW = new Date(), NOWS = NOW.toISOString();
-const H36 = 36 * 3600e3, D30 = 30 * 86400e3, MAX = 1500;
+const H36 = 72 * 3600e3, D30 = 30 * 86400e3, MAX = 1500;
 
 const AYLAR = ["yanvar", "fevral", "mart", "aprel", "may", "iyun", "iyul", "avqust", "sentyabr", "oktyabr", "noyabr", "dekabr"];
 function parseDate(s) {
