@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>KarYera AI — sənə uyğun işi tap, müraciətə hazırlaş</title>
-<meta name="description" content="Azərbaycan dilində AI iş agenti: iş saytlarından sənə uyğun vakansiyalar, bir kliklə müraciət paketi, səsli müsahibə məşqi, 12 şablonlu CV.">
+<meta name="description" content="Azərbaycan dilində AI iş agenti: iş saytlarından sənə uyğun vakansiyalar, bir kliklə müraciət paketi, səsli müsahibə məşqi, 30 şablonlu CV.">
 <meta name="theme-color" content="#141A33">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <meta property="og:title" content="KarYera AI">
 <meta property="og:description" content="Sənə uyğun işi tap, müraciətə bir kliklə hazırlaş.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700&family=Unbounded:wght@500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700&family=Unbounded:wght@500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -37,7 +37,7 @@
 <section id="cv">
   <div class="intro">
     <div>
-      <h1>CV-ni yaz, 12 şablondan birini seç, PDF kimi yüklə</h1>
+      <h1>CV-ni yaz, 30 şablondan birini seç, PDF kimi yüklə</h1>
       <p>Yazdıqca önizləmə yenilənir. Şablon, rəng və şrift dəyişmək pulsuzdur; AI yalnız istədiyin yerdə işə düşür.</p>
       <div class="row"><button class="btn" id="vprof" type="button">Danış, CV-ni yazım <span class="cost">2 kredit</span></button><button class="btn ghost" id="oldcv" type="button">Köhnə CV-ni yüklə <span class="cost">2 kredit</span></button></div>
       <div class="row mt"><button class="btn ghost sm" id="demo" type="button">Nümunə ilə doldur</button><button class="btn ghost sm" id="clear" type="button">Formanı təmizlə</button></div>
@@ -89,12 +89,13 @@
     <div class="pvcol" id="pvcol">
       <div class="panel">
         <div class="panel-h"><b>Şablon</b><span class="hint" id="tpname"></span></div>
+        <div class="tgf" id="tgf" aria-label="Şablon qrupları"></div>
         <div class="strip" id="gal" role="listbox" aria-label="CV şablonları"></div>
         <div class="ctl">
           <div><div class="ctl-l">Rəng</div><div class="sw" id="sw"></div></div>
           <div class="ctl-row">
             <label>Şrift <select id="font">
-              <option value="">Şablona görə</option><option value="onest">Müasir</option><option value="lora">Klassik serif</option><option value="plex">Texniki</option><option value="unb">Cəsarətli enli</option>
+              <option value="">Şablona görə</option><option value="onest">Müasir</option><option value="lora">Klassik serif</option><option value="plex">Texniki</option><option value="unb">Cəsarətli enli</option><option value="man">Yumşaq müasir</option><option value="pf">Zərif serif</option><option value="sg">Geometrik</option>
             </select></label>
             <div><div class="ctl-l">CV dili</div><div class="seg" id="lang"><button type="button" data-l="az" class="on">AZ</button><button type="button" data-l="en">EN</button></div></div>
             <label class="chk"><input type="checkbox" id="phon" checked>Şəkil göstər</label>
@@ -306,7 +307,7 @@
     </ul>
     <h3>Versiya 2: sıfırdan yenilənmiş</h3>
     <ul>
-      <li>12 CV şablonu: Müasir, Yan panel, Kreativ, Zaman xətti, Bento, Jurnal, Diaqonal, Monoqram, Rəhbər, Klassik, Minimal, ATS.</li>
+      <li>30 CV şablonu, 4 qrupda: Premium, Kreativ, Peşəkar, Sadə / ATS. Yeni: Noir, Lüks, İmza, Oniks, Atelye, Zərif, Prestij, Qradiyent, Afişa, Studiya, Dalğa, Vertikal, Pastel, Brutal, Korporativ, Kompakt, İsveçrə, Təmiz.</li>
       <li>10 hazır rəng + öz rəngini seçmək, 4 şrift üslubu, şəkli gizlətmək.</li>
       <li>Canlı önizləmə: yazdıqca CV yenilənir, ayrıca «yarat» düyməsi yoxdur.</li>
       <li>Bir neçə iş təcrübəsi və təhsil, LinkedIn/sayt sahəsi.</li>

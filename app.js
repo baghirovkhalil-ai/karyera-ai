@@ -97,10 +97,14 @@ function yrs(d) {
 const cvBrief = d => ({ ad: d.ad, vez: d.vez, il: yrs(d), haqqinda: d.hq, tecrube: d.exps.filter(e => e.v || e.s || e.t).map(e => ({ vezife: e.v, sirket: e.s, muddet: e.m, ne_etdi: e.t })), tehsil: d.edu.filter(e => e.i).map(e => e.i + (e.m ? ", " + e.m : "")), bacariqlar: d.bac, diller: d.dil, sertifikatlar: d.ser });
 
 /* --- şablonlar --- */
-const TPL = [["modern", "Müasir"], ["sidebar", "Yan panel"], ["creative", "Kreativ"], ["timeline", "Zaman xətti"], ["bento", "Bento"], ["magazine", "Jurnal"], ["diagonal", "Diaqonal"], ["monogram", "Monoqram"], ["executive", "Rəhbər"], ["classic", "Klassik"], ["minimal", "Minimal"], ["ats", "ATS (sadə)"]];
-const NOPHOTO = new Set(["minimal", "ats", "executive"]);
+// [id, ad, qrup, yeni?]  qruplar: pre=Premium, kre=Kreativ, pro=Peşəkar, sad=Sadə/ATS
+const TPL = [["modern", "Müasir", "pro"], ["noir", "Noir", "pre", 1], ["creative", "Kreativ", "kre"], ["lux", "Lüks", "pre", 1], ["gradient", "Qradiyent", "kre", 1], ["sidebar", "Yan panel", "pro"], ["signature", "İmza", "pre", 1], ["poster", "Afişa", "kre", 1], ["magazine", "Jurnal", "pre"], ["studio", "Studiya", "kre", 1], ["timeline", "Zaman xətti", "pro"], ["onyx", "Oniks", "pre", 1], ["wave", "Dalğa", "kre", 1], ["bento", "Bento", "kre"], ["atelier", "Atelye", "pre", 1], ["vertical", "Vertikal", "kre", 1], ["diagonal", "Diaqonal", "kre"], ["elegant", "Zərif", "pre", 1], ["pastel", "Pastel", "kre", 1], ["monogram", "Monoqram", "pre"], ["brutal", "Brutal", "kre", 1], ["prestige", "Prestij", "pre", 1], ["executive", "Rəhbər", "pre"], ["corporate", "Korporativ", "pro", 1], ["classic", "Klassik", "pro"], ["compact", "Kompakt", "pro", 1], ["swiss", "İsveçrə", "sad", 1], ["minimal", "Minimal", "sad"], ["clean", "Təmiz", "sad", 1], ["ats", "ATS (sadə)", "sad"]];
+const TGR = [["all", "Hamısı"], ["pre", "Premium"], ["kre", "Kreativ"], ["pro", "Peşəkar"], ["sad", "Sadə / ATS"]];
+let tgf = "all";
+const tpLabel = () => TPL.find(t => t[0] === S.tp)[1] + " · " + TPL.length + " şablon";
+const NOPHOTO = new Set(["minimal", "ats", "executive", "clean"]);
 const COL = [["#C2264B", "Nar"], ["#1F3A68", "Mürəkkəb"], ["#0E7C86", "Xəzər"], ["#4F7A28", "Zeytun"], ["#6D3FC0", "Bənövşə"], ["#C46F12", "Kəhrəba"], ["#2E3440", "Qrafit"], ["#C23F7A", "Qızılgül"], ["#8A4B2A", "Çay"], ["#127A52", "Zümrüd"]];
-const FONTS = { onest: "'Onest',sans-serif", lora: "'Lora',serif", plex: "'IBM Plex Sans',sans-serif", unb: "'Unbounded',sans-serif" };
+const FONTS = { onest: "'Onest',sans-serif", lora: "'Lora',serif", plex: "'IBM Plex Sans',sans-serif", unb: "'Unbounded',sans-serif", man: "'Manrope',sans-serif", pf: "'Playfair Display',serif", sg: "'Space Grotesk',sans-serif" };
 const LB = {
   az: { about: "Haqqında", exp: "İş təcrübəsi", edu: "Təhsil", sk: "Bacarıqlar", lg: "Dillər", ce: "Sertifikatlar", ct: "Əlaqə" },
   en: { about: "Profile", exp: "Experience", edu: "Education", sk: "Skills", lg: "Languages", ce: "Certificates", ct: "Contact" }
@@ -148,6 +152,23 @@ function build(d, o) {
     case "monogram": h = `<header class="hd"><div class="mono">${p.ph && d.photo ? p.ph : `<span>${esc(p.ini)}</span>`}</div><div>${p.name}${p.role}</div></header><div class="cols"><aside class="sd">${p.ctSec}${p.skl}${p.lg}${p.ce}</aside><div class="mn">${p.about}${p.exp}${p.edu}</div></div>`; break;
     case "executive": h = `<header class="hd"><div>${p.name}${p.role}</div>${p.ct}</header><div class="cols"><div class="mn">${p.about}${p.exp}</div><aside class="sd">${p.edu}${p.skl}${p.lg}${p.ce}</aside></div>`; break;
     case "classic": h = `<header class="hd">${p.ph}${p.name}${p.role}${p.ct}</header>${all}`; break;
+    case "noir": h = `<aside class="sd">${p.ph}${p.name}${p.role}<i class="rule"></i>${p.ctSec}${p.skl}${p.lg}${p.ce}</aside><div class="mn">${p.about}${p.exp}${p.edu}</div>`; break;
+    case "lux": h = `<header class="hd">${p.ph}${p.name}${p.role}${p.ct}</header><div class="cols"><div class="mn">${p.about}${p.exp}</div><aside class="sd">${p.edu}${p.skl}${p.lg}${p.ce}</aside></div>`; break;
+    case "atelier": h = `<i class="wm">${esc(p.ini)}</i><header class="hd"><div>${p.name}${p.role}</div>${p.ph}</header>${p.ct}<div class="cols"><div class="mn">${p.about}${p.exp}</div><aside class="sd">${p.edu}${p.skl}${p.lg}${p.ce}</aside></div>`; break;
+    case "elegant": h = `<i class="frame"></i><header class="hd">${p.ph}${p.name}${p.role}${p.ct}</header>${p.about}<div class="cols"><div class="mn">${p.exp}${p.edu}</div><aside class="sd">${p.skl}${p.lg}${p.ce}</aside></div>`; break;
+    case "prestige": h = `<header class="hd"><div>${p.name}${p.role}</div>${p.ph}</header>${p.ct ? `<div class="bar">${p.ct}</div>` : ""}<div class="bd">${all}</div>`; break;
+    case "signature": h = `<header class="hd">${p.ph}<div>${p.name}<i class="sw"></i>${p.role}${p.ct}</div></header><div class="cols"><div class="mn">${p.about}${p.exp}</div><aside class="sd">${p.edu}${p.skl}${p.lg}${p.ce}</aside></div>`; break;
+    case "onyx": h = `<header class="hd">${p.ph}${head}</header><div class="cols"><div class="mn">${p.about}${p.exp}</div><aside class="sd">${p.edu}${p.skl}${p.lg}${p.ce}</aside></div>`; break;
+    case "gradient": h = `<header class="hd">${head}${p.ph}</header><div class="card">${p.about}${p.exp}<div class="two"><div>${p.edu}${p.ce}</div><div>${p.skl}${p.lg}</div></div></div>`; break;
+    case "brutal": h = `<header class="hd">${p.ph}<div>${p.name}${p.role}</div></header>${p.ct}<div class="grid">${all}</div>`; break;
+    case "wave": h = `<header class="hd"><div>${p.name}${p.role}${p.ct}</div></header>${p.ph}<div class="bd">${p.about}${p.exp}<div class="two"><div>${p.edu}${p.ce}</div><div>${p.skl}${p.lg}</div></div></div>`; break;
+    case "vertical": h = `<aside class="vs">${p.name}</aside><div class="mn"><header class="hd">${p.ph}<div>${p.role}${p.ct}</div></header>${all}</div>`; break;
+    case "poster": h = `<header class="hd"><div class="tp">${p.name}${p.ph}</div>${p.role}${p.ct}</header><div class="cols"><div class="mn">${p.about}${p.exp}</div><aside class="sd">${p.edu}${p.skl}${p.lg}${p.ce}</aside></div>`; break;
+    case "pastel": h = `<header class="hd">${p.ph}${head}</header><div class="cols"><div class="mn">${p.about}${p.exp}</div><aside class="sd">${p.skl}${p.edu}${p.lg}${p.ce}</aside></div>`; break;
+    case "studio": h = `<aside class="sd">${p.ph || `<div class="ph"><span>${esc(p.ini)}</span></div>`}<div class="in">${p.ctSec}${p.skl}${p.lg}${p.ce}</div></aside><div class="mn"><header class="hd">${p.name}${p.role}</header>${p.about}${p.exp}${p.edu}</div>`; break;
+    case "corporate": h = `<header class="hd">${p.ph}<div>${p.name}${p.role}</div></header>${p.ct ? `<div class="ctb">${p.ct}</div>` : ""}<div class="cols"><div class="mn">${p.about}${p.exp}${p.edu}</div><aside class="sd">${p.skl}${p.lg}${p.ce}</aside></div>`; break;
+    case "compact": h = `<header class="hd">${p.ph}${head}</header><div class="cols"><div class="mn">${p.about}${p.exp}</div><aside class="sd">${p.edu}${p.skl}${p.lg}${p.ce}</aside></div>`; break;
+    case "swiss": h = `<header class="hd"><div>${p.name}${p.role}</div>${p.ph}</header>${p.ct}<div class="bd">${all}</div>`; break;
     default: h = `<header class="hd">${p.name}${p.role}${p.ct}</header>${all}`;
   }
   const st = `--ac:${o.ac};--tint:${mix(o.ac, "#ffffff", .11)};--deep:${mix(o.ac, "#000000", .72)};--lite:${mix(o.ac, "#ffffff", .45)};` + (FONTS[o.font] ? `--cvf:${FONTS[o.font]};` : "");
@@ -183,9 +204,10 @@ let tmr; const sched = () => { clearTimeout(tmr); tmr = setTimeout(render, 160) 
 function render() {
   const d = view();
   $("#pv").innerHTML = build(d, opts());
-  $("#gal").innerHTML = TPL.map(t => `<button type="button" role="option" class="tpl${t[0] === S.tp ? " on" : ""}" aria-selected="${t[0] === S.tp}" data-tp="${t[0]}"><span class="th">${build(d, opts(t[0]))}</span><span class="tn">${t[1]}</span></button>`).join("");
+  $("#tgf").innerHTML = TGR.map(g => `<button type="button" data-g="${g[0]}" class="${g[0] === tgf ? "on" : ""}" aria-pressed="${g[0] === tgf}">${g[1]} <small>${g[0] === "all" ? TPL.length : TPL.filter(t => t[2] === g[0]).length}</small></button>`).join("");
+  $("#gal").innerHTML = TPL.filter(t => tgf === "all" || t[2] === tgf).map(t => `<button type="button" role="option" class="tpl${t[0] === S.tp ? " on" : ""}" aria-selected="${t[0] === S.tp}" data-tp="${t[0]}"><span class="th">${build(d, opts(t[0]))}</span><span class="tn">${t[1]}${t[3] ? `<i class="new">yeni</i>` : ""}</span></button>`).join("");
   $("#fan").innerHTML = ["creative", S.tp === "creative" ? "modern" : S.tp, "sidebar"].map(t => `<span class="th">${build(d, opts(t))}</span>`).join("");
-  $("#tpname").textContent = TPL.find(t => t[0] === S.tp)[1] + " · 12 şablon";
+  $("#tpname").textContent = tpLabel();
   score(); langNote();
   $("#pdfnote").textContent = (S.paid ? "Bu CV üçün ödənilib: yenidən yükləmək pulsuzdur." : "İlk yükləmə 1 kredit, sonrakılar pulsuz.") + " İşəgötürən proqramları (ATS) mətni oxusun deyə «Çap et» → «PDF kimi saxla» yolunu da seçə bilərsən.";
   fitAll();
@@ -267,12 +289,13 @@ $("#clear").onclick = () => {
 };
 
 /* --- dizayn idarəsi --- */
+$("#tgf").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; tgf = b.dataset.g; render(); $("#gal").scrollLeft = 0 });
 $("#gal").addEventListener("click", e => {
   const b = e.target.closest(".tpl"); if (!b) return;
   S.tp = b.dataset.tp; save();
   $$("#gal .tpl").forEach(x => { x.classList.toggle("on", x === b); x.setAttribute("aria-selected", x === b) });
   $("#pv").innerHTML = build(view(), opts());
-  $("#tpname").textContent = TPL.find(t => t[0] === S.tp)[1] + " · 12 şablon";
+  $("#tpname").textContent = tpLabel();
   score(); fitAll();
 });
 $("#sw").innerHTML = COL.map(c => `<button type="button" data-c="${c[0]}" title="${c[1]}" aria-label="${c[1]}" style="background:${c[0]}"></button>`).join("") + `<label class="cust" title="Öz rəngin"><input type="color" id="cust" value="#C2264B" aria-label="Öz rəngini seç"></label>`;
