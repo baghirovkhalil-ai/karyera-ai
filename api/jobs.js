@@ -70,28 +70,51 @@ async function runSource(id, q) {
   }
 }
 
-export async function collect({ q = "", remote = false, src = "" } = {}) {
+// Sahələr: Azərbaycan saytları üçün azərbaycanca, uzaqdan iş mənbələri üçün ingiliscə açar sözlər
+export const CATS = {
+  yeni: { az: [""], en: [""] },
+  satis: { az: ["satış"], en: ["sales"] },
+  marketinq: { az: ["marketinq", "smm"], en: ["marketing"] },
+  it: { az: ["proqramçı", "developer"], en: ["developer", "engineer"] },
+  maliyye: { az: ["mühasib", "maliyyə"], en: ["accounting", "finance"] },
+  musteri: { az: ["operator", "müştəri xidməti"], en: ["customer support"] },
+  hr: { az: ["HR", "kadr"], en: ["recruiter", "HR"] },
+  dizayn: { az: ["dizayner"], en: ["designer"] },
+  logistika: { az: ["logistika", "anbar"], en: ["logistics", "operations"] },
+  tehsil: { az: ["müəllim"], en: ["teacher", "tutor"] },
+  tibb: { az: ["həkim", "tibb bacısı"], en: ["healthcare", "nurse"] },
+  turizm: { az: ["otel", "turizm"], en: ["travel", "hospitality"] },
+  tikinti: { az: ["mühəndis", "tikinti"], en: ["civil engineer", "construction"] },
+  tecrube: { az: ["təcrübə proqramı", "intern"], en: ["intern", "junior"] }
+};
+
+export async function collect({ q = "", remote = false, src = "", cat = "" } = {}) {
   q = String(q).trim().slice(0, 80);
   const allowed = String(process.env.JOBS_SOURCES || Object.keys(SOURCES).join(",")).split(",").map(s => s.trim()).filter(id => SOURCES[id]);
   let ids = allowed.filter(id => remote ? SOURCES[id].remote : !SOURCES[id].remote);
   if (src) { const want = String(src).split(","); ids = ids.filter(id => want.includes(id)) }
-  const results = await Promise.all(ids.map(id => runSource(id, q)));
-  const toks = q.toLocaleLowerCase("az").split(/\s+/).filter(w => w.length > 2);
-  const seen = new Set(), items = [];
-  for (const r of results) for (const it of r.items) {
-    if (SOURCES[r.id].local && toks.length && !toks.some(t => (it.title + " " + it.company).toLocaleLowerCase("az").includes(t))) continue;
-    const key = (it.title + "|" + it.company).toLowerCase();
-    if (seen.has(key)) continue; seen.add(key);
-    items.push({ ...it, id: Buffer.from(it.url).toString("base64url").slice(-24) });
+  const qs = CATS[cat] ? CATS[cat][remote ? "en" : "az"] : [q];
+  const runs = await Promise.all(qs.flatMap(qq => ids.map(id => runSource(id, qq).then(r => ({ ...r, qq })))));
+  const seen = new Set(), items = [], agg = {};
+  for (const r of runs) {
+    const toks = r.qq.toLocaleLowerCase("az").split(/\s+/).filter(w => w.length > 2);
+    const a = agg[r.id] || (agg[r.id] = { id: r.id, name: r.name, ok: false, count: 0, cached: true });
+    a.ok = a.ok || r.ok; a.cached = a.cached && !!r.cached; if (!r.ok && !a.error) a.error = r.error;
+    for (const it of r.items) {
+      if (SOURCES[r.id].local && toks.length && !toks.some(t => (it.title + " " + it.company).toLocaleLowerCase("az").includes(t))) continue;
+      const key = (it.title + "|" + it.company).toLowerCase();
+      if (seen.has(key)) continue; seen.add(key); a.count++;
+      items.push({ ...it, id: Buffer.from(it.url).toString("base64url").slice(-24) });
+    }
   }
-  const sources = results.map(r => ({ id: r.id, name: r.name, ok: r.ok, count: r.items.length, error: r.error, cached: !!r.cached }));
-  return { q, remote, enabled: allowed, sources, items };
+  const sources = Object.values(agg).map(a => (a.ok ? { ...a, error: undefined } : a));
+  return { q, cat: CATS[cat] ? cat : "", remote, enabled: allowed, sources, items };
 }
 
 export default async function handler(req, res) {
   const qy = req.query || {};
-  const out = await collect({ q: qy.q, remote: qy.remote === "1", src: qy.src });
+  const out = await collect({ q: qy.q, remote: qy.remote === "1", src: qy.src, cat: qy.cat });
   res.setHeader("Cache-Control", "s-maxage=1800, stale-while-revalidate=3600");
-  if (qy.debug) return res.status(200).json({ q: out.q, remote: out.remote, enabled: out.enabled, sources: out.sources, sample: out.items.slice(0, 5) });
-  return res.status(200).json({ q: out.q, remote: out.remote, sources: out.sources, items: out.items.slice(0, 120) });
+  if (qy.debug) return res.status(200).json({ q: out.q, cat: out.cat, remote: out.remote, enabled: out.enabled, sources: out.sources, sample: out.items.slice(0, 5) });
+  return res.status(200).json({ q: out.q, cat: out.cat, remote: out.remote, sources: out.sources, items: out.items.slice(0, 150) });
 }

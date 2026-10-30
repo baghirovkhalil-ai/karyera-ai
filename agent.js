@@ -84,21 +84,52 @@
       box.innerHTML = lastSrc.length ? `<div class="jl"><div class="jempty">Bu axtarışa uyğun elan tapılmadı. Başqa söz yaz və ya «Elanın linkini əlavə et» ilə istənilən saytdan elan gətir.</div></div>` : "";
       return;
     }
-    const rows = jobs.map((it, i) => `<div class="jrow">${ring(it.m)}<div><h4><a href="${esc(it.url)}" target="_blank" rel="noopener">${esc(it.title)}</a></h4><div class="jmeta">${it.company ? `<span>${esc(it.company)}</span>` : ""}<span>${esc(it.source)}</span>${it.location ? `<span>${esc(it.location)}</span>` : ""}${azDate(it.date) ? `<span>${azDate(it.date)}</span>` : ""}${it.remote && it.eligible ? `<span class="el-${it.eligible === "yes" ? "yes" : "check"}">${it.eligible === "yes" ? "Azərbaycandan müraciət olar" : "Ölkə şərtini yoxla"}</span>` : ""}</div></div><div class="jact"><button class="btn sm" type="button" data-pk="${i}">Müraciət paketi <span class="cost">2</span></button><button class="btn ghost sm" type="button" data-ap="${i}">Müraciət etdim</button></div></div>`).join("");
-    box.innerHTML = `<div class="jhead"><b>${jobs.length} elan, uyğunluğa görə sıralanıb</b>${isEmpty(S.d) ? `<span class="hint">Uyğunluq faizi üçün əvvəlcə CV-ni doldur.</span>` : `<span class="hint">Faiz təxminidir; dəqiq faiz müraciət paketində.</span>`}</div><div class="jl">${rows}</div>`;
+    const rows = jobs.map((it, i) => `<div class="jrow">${ring(it.m)}<div><h4><a href="${esc(it.url)}" target="_blank" rel="noopener">${esc(it.title)}</a></h4><div class="jmeta">${it.company ? `<span>${esc(it.company)}</span>` : ""}<span>${esc(it.source)}</span>${it.location ? `<span>${esc(it.location)}</span>` : it.city === "region" ? "<span>Region</span>" : ""}${azDate(it.date) ? `<span>${azDate(it.date)}</span>` : ""}${it.remote && it.eligible ? `<span class="el-${it.eligible === "yes" ? "yes" : "check"}">${it.eligible === "yes" ? "Azərbaycandan müraciət olar" : "Ölkə şərtini yoxla"}</span>` : ""}</div></div><div class="jact"><button class="btn sm" type="button" data-pk="${i}">Müraciət paketi <span class="cost">2</span></button><button class="btn ghost sm" type="button" data-ap="${i}">Müraciət etdim</button></div></div>`).join("");
+    const cn = (CATL.find(c => c[0] === jcat) || [, ""])[1];
+    box.innerHTML = `<div class="jhead"><b>${jobs.length} elan${cn && jcat !== "yeni" ? " · " + esc(cn) : ""}${isEmpty(S.d) ? ", ən yenilər əvvəl" : ", uyğunluğa görə"}</b><span class="hint">${feedAt && jmode !== "remote" ? "Baza yeniləndi: " + esc(feedAt) + ". " : ""}${isEmpty(S.d) ? "Uyğunluq faizi üçün CV-ni doldur." : "Faiz təxminidir; dəqiq faiz müraciət paketində."}</span></div><div class="jl">${rows}</div>`;
+  }
+  const CATL = [["yeni", "Ən yeni"], ["satis", "Satış"], ["marketinq", "Marketinq / SMM"], ["it", "IT"], ["maliyye", "Maliyyə / Mühasibat"], ["musteri", "Müştəri xidməti"], ["hr", "HR"], ["dizayn", "Dizayn"], ["logistika", "Logistika"], ["tehsil", "Təhsil"], ["tibb", "Tibb"], ["turizm", "Turizm / Otel"], ["tikinti", "Tikinti / Mühəndislik"], ["tecrube", "Təcrübə proqramı"]];
+  let jcat = "", feed = null, feedAt = "";
+  $("#jcats").innerHTML = CATL.map(([k, n]) => `<button type="button" data-cat="${k}" aria-pressed="false">${esc(n)}</button>`).join("");
+  $("#jcats").addEventListener("click", e => {
+    const b = e.target.closest("button[data-cat]"); if (!b) return;
+    jcat = jcat === b.dataset.cat ? "" : b.dataset.cat;
+    $$("#jcats button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.cat === jcat)));
+    if (jcat) $("#jq").value = "";
+    loadJobs();
+  });
+  async function getFeed() {
+    if (feed) return feed;
+    try { const r = await fetch("/data/jobs.json", { cache: "no-cache" }); if (r.ok) feed = await r.json() } catch (e) { }
+    if (feed && feed.updated) { const d = new Date(feed.updated); feedAt = (d.toDateString() === new Date().toDateString() ? "bu gün " : azDate(feed.updated) + ", ") + d.toLocaleTimeString("az", { hour: "2-digit", minute: "2-digit" }) }
+    return feed;
   }
   async function loadJobs() {
-    const q = $("#jq").value.trim(), b = $("#jgo");
+    const q = $("#jq").value.trim(), b = $("#jgo"), remote = jmode === "remote";
+    if (q && jcat) { jcat = ""; $$("#jcats button").forEach(x => x.setAttribute("aria-pressed", "false")) }
     busy(b, true, "Axtarılır…");
     $("#jlist").innerHTML = `<div class="jl">${"<div class='sk'></div>".repeat(4)}</div>`;
-    try {
-      const r = await fetch("/api/jobs?q=" + encodeURIComponent(q) + (jmode === "remote" ? "&remote=1" : ""));
-      const j = await r.json();
-      lastSrc = j.sources || [];
-      jobs = (j.items || []).map(it => Object.assign(it, { m: match(it) })).sort((a, b) => (b.m ?? -1) - (a.m ?? -1));
-    } catch (e) { jobs = []; lastSrc = []; $("#jlist").innerHTML = `<div class="bad-box">Elanları yükləmək alınmadı. İnterneti yoxla və yenidən sına.</div>`; busy(b, false); return }
+    let items = [], src = {};
+    const add = (arr, live) => arr.forEach(it => { if (!it.url || items.some(x => x.url === it.url)) return; items.push(it); const s = src[it.source] || (src[it.source] = { name: it.source, ok: true, count: 0, live }); s.count++ });
+    if (!remote) {
+      const f = await getFeed();
+      if (f && Array.isArray(f.jobs)) {
+        const toks = words(q);
+        add(f.jobs.filter(j => !j.remote && (!jcat || jcat === "yeni" || j.cat === jcat) && (!toks.length || toks.some(t => words(j.title + " " + j.company).some(w => w.startsWith(t.slice(0, 5)))))).map(j => ({ ...j })), false);
+      }
+    }
+    let liveSrc = [];
+    if (remote || (q && items.length < 8) || (!items.length && !feed)) {
+      try {
+        const r = await fetch("/api/jobs?" + (jcat && jcat !== "yeni" ? "cat=" + jcat : "q=" + encodeURIComponent(q)) + (remote ? "&remote=1" : ""));
+        const j = await r.json(); liveSrc = j.sources || []; add(j.items || [], true);
+      } catch (e) { if (!items.length) { $("#jlist").innerHTML = `<div class="bad-box">Elanları yükləmək alınmadı. İnterneti yoxla və yenidən sına.</div>`; busy(b, false); return } }
+    }
+    lastSrc = Object.values(src).concat(liveSrc.filter(s => !s.ok));
+    const hasCv = !isEmpty(S.d);
+    jobs = items.map(it => Object.assign(it, { m: match(it) })).sort((a, b) => (hasCv ? (b.m ?? -1) - (a.m ?? -1) : 0) || (Date.parse(b.date || b.first_seen || 0) || 0) - (Date.parse(a.date || a.first_seen || 0) || 0));
     busy(b, false); renderJobs();
-    if (KY.sb && KY.user) KY.sb.from("profiles").update({ job_query: q, job_remote: jmode === "remote" }).eq("id", KY.user.id).then(() => { });
+    if (KY.sb && KY.user) KY.sb.from("profiles").update({ job_query: q || (CATL.find(c => c[0] === jcat) || [, ""])[1], job_remote: remote }).eq("id", KY.user.id).then(() => { });
   }
   $("#jform").addEventListener("submit", loadJobs);
   $("#jmode").addEventListener("click", e => {
@@ -190,6 +221,7 @@ Vakansiya: ${JSON.stringify({ basliq: it.title, sirket: it.company, metn: text.s
   }
   function renderPkg(it, P, text) {
     const m = Math.max(0, Math.min(100, Math.round(+P.match || 0)));
+    const em = (String(text || "").match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i) || [])[0] || "";
     const li = a => (Array.isArray(a) ? a : []).map(x => `<li>${esc(x)}</li>`).join("");
     const el = P.eligible ? `<div class="pk-sec full"><h4>Azərbaycandan müraciət</h4><p class="${P.eligible === "yes" ? "ok-box" : P.eligible === "no" ? "bad-box" : "msg"}" style="margin:0">${P.eligible === "yes" ? "Açıqdır." : P.eligible === "no" ? "Açıq deyil." : "Aydın deyil."} ${esc(P.eligible_reason || "")}</p></div>` : "";
     $("#pbody").innerHTML = `<div class="pk-h">${ring(m)}<div><h3 id="pdlg-h">${esc(it.title)}</h3><p class="muted">${esc([it.company, it.source].filter(Boolean).join(", "))}</p></div></div>
@@ -202,7 +234,8 @@ Vakansiya: ${JSON.stringify({ basliq: it.title, sirket: it.company, metn: text.s
       <div class="pk-sec"><h4>Email</h4><p class="txt"><b>${esc((P.email || {}).subject)}</b>\n\n${esc((P.email || {}).body)}</p><button class="btn ghost sm mt" id="pk-em" type="button">Kopyala</button></div>
       <div class="pk-sec"><h4>Ehtimal olunan suallar</h4><ol>${li(P.questions)}</ol><button class="btn ghost sm mt" id="pk-mq" type="button">Bu suallarla məşq et</button></div>
     </div>
-    <div class="pk-foot"><button class="btn" id="pk-ap" type="button">Müraciət etdim</button>${it.url ? `<a class="btn ghost" href="${esc(it.url)}" target="_blank" rel="noopener">Elanı aç</a>` : ""}<span class="hint" style="align-self:center">AI yazdı: faktları yoxla, sonra göndər.</span></div>`;
+    <div class="pk-foot">${em ? `<button class="btn ghost" id="pk-pdf" type="button">1. CV-ni PDF yüklə</button><a class="btn" id="pk-mail" href="mailto:${esc(em)}?subject=${encodeURIComponent((P.email || {}).subject || it.title)}&body=${encodeURIComponent((P.email || {}).body || "")}">2. Email ilə müraciət et</a>` : ""}${it.url ? `<a class="btn ${em ? "ghost" : ""}" href="${esc(it.url)}" target="_blank" rel="noopener" id="pk-open">${em ? "Elanı aç" : "Elanı aç və müraciət et"}</a>` : ""}<button class="btn ghost" id="pk-ap" type="button">Müraciət etdim</button></div>
+    <p class="hint mt">${em ? "Elanda email var: " + esc(em) + ". Email proqramı açılanda yüklədiyin CV PDF-ni əlavə et. " : "Müraciət iş saytında edilir. "}AI yazdı: faktları yoxla, sonra göndər.</p>`;
     $("#pk-hq").onclick = () => { S.d.hq = P.summary; save(); fillForm(); render(); toast("«Haqqında» bu elana uyğunlaşdırıldı.") };
     const sk = $("#pk-sk"); if (sk) sk.onclick = () => {
       const cur = list(S.d.bac), pri = cur.filter(s => P.skills.some(k => s.toLocaleLowerCase("az").includes(String(k).toLocaleLowerCase("az").slice(0, 5)) || String(k).toLocaleLowerCase("az").includes(s.toLocaleLowerCase("az").slice(0, 5))));
@@ -219,6 +252,8 @@ Vakansiya: ${JSON.stringify({ basliq: it.title, sirket: it.company, metn: text.s
       dlgP.close(); tab("mus");
     };
     $("#pk-ap").onclick = () => { markApplied(it); dlgP.close() };
+    const pdfB = $("#pk-pdf"); if (pdfB) pdfB.onclick = () => $("#dl").click();
+    const mailB = $("#pk-mail"); if (mailB) mailB.addEventListener("click", () => markApplied(it, true));
   }
 
   /* ======================= Səslə profil və köhnə CV ======================= */
@@ -361,7 +396,7 @@ Namizəd: ${JSON.stringify(cvBrief(S.d))}
   if (!$("#jq").value) $("#jq").value = S.d.vez || "";
   followups();
   const h = location.hash.slice(1);
-  const autoJobs = () => { if (!$("#jq").value.trim()) $("#jq").value = S.d.vez || ""; if (!lastSrc.length && !jobs.length) loadJobs() };
+  const autoJobs = () => { if (!$("#jq").value.trim() && !jcat) { if (S.d.vez) $("#jq").value = S.d.vez; else { jcat = "yeni"; $$("#jcats button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.cat === "yeni"))) } } if (!lastSrc.length && !jobs.length) loadJobs() };
   $$('.tabs button[data-t="job"], [data-go="job"]').forEach(x => x.addEventListener("click", autoJobs));
   if (TABS.includes(h)) tab(h); else if (!isEmpty(S.d)) tab("job");
   if (!$("#job").hidden) autoJobs();

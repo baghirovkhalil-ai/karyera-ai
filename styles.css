@@ -489,3 +489,9 @@ h1,h2,h3{text-wrap:balance}
 @media (max-width:759px){.foot{padding-bottom:80px}}
 @media (prefers-reduced-motion:reduce){.sk,.recb[aria-pressed="true"]{animation:none}}
 .job-hero,.top{border:1px solid color-mix(in srgb,var(--on-night) 9%,transparent)}
+
+.jcats{position:relative;display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+.jcats button{border:1px solid rgba(255,255,255,.16);background:transparent;color:var(--on-night-mut);border-radius:99px;padding:6px 12px;font-size:13px;cursor:pointer;white-space:nowrap}
+.jcats button:hover{color:var(--on-night);border-color:rgba(255,255,255,.32)}
+.jcats button[aria-pressed="true"]{background:var(--saf);border-color:var(--saf);color:#2A1C05;font-weight:600}
+@media (max-width:640px){.jcats{flex-wrap:nowrap;overflow-x:auto;margin-right:-24px;padding-right:24px;scrollbar-width:none}.jcats::-webkit-scrollbar{display:none}}
