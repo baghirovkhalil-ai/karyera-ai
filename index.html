@@ -144,8 +144,11 @@
 
 <!-- ================= Müsahibə ================= -->
 <section id="mus" hidden>
-  <div class="pane-h"><h2>Müsahibə məşqi</h2><p>5 sual, hər cavaba struktur, konkretlik və nəticə üzrə bal. Cavabı yenidən yazmaq pulsuzdur.</p></div>
+  <div class="pane-h"><h2>Müsahibə məşqi</h2><p>AI müsahibəçi ilə canlı yazış və ya 5 suallıq məşq: hər cavaba rəy, sonda ümumi nəticə.</p></div>
   <div class="card" id="m0">
+    <div class="ctl-l">Rejim</div>
+    <div class="seg" id="mmode" style="margin-bottom:14px"><button type="button" data-m="chat" class="on">Canlı müsahibə (chat)</button><button type="button" data-m="qa">5 sual + bal</button></div>
+    <p class="hint" id="mmodeh" style="margin:-4px 0 14px">AI müsahibəçi real müsahibədəki kimi yazır: sual verir, cavabına reaksiya verir, dərinləşdirir. Sən də ona sual verə bilərsən. Hər cavabdan sonra kiçik məsləhət görürsən.</p>
     <div class="g2"><label>Müsahibə növü<select id="mtip"></select></label>
       <label>Müsahibə dili<select id="mlang"><option value="az">Azərbaycan</option><option value="en">English</option><option value="ru">Русский</option></select></label></div>
     <label class="chk mt"><input type="checkbox" id="mspeak" checked>Sualları səslə oxu (səslə cavab üçün «Səslə cavab ver»)</label>
@@ -163,6 +166,16 @@
       <div id="mfb" class="mt" hidden></div>
       <div class="row mt" id="mnav" hidden><button class="btn ghost" id="mretry" type="button">Yenidən yaz</button><button class="btn" id="mnext" type="button">Növbəti sual</button></div>
     </div>
+  </div>
+  <div id="mchat" class="chat" hidden>
+    <div class="ch-top"><span class="ch-av" aria-hidden="true">HR</span><div class="ch-who"><b>AI müsahibəçi</b><small id="mcsub">onlayn</small></div><button class="btn ghost sm" id="mcend" type="button">Bitir və nəticə</button></div>
+    <div class="ch-log" id="mclog" aria-live="polite"></div>
+    <form class="ch-in" id="mcform" autocomplete="off">
+      <textarea id="mcin" rows="1" placeholder="Cavabını yaz…" aria-label="Mesaj"></textarea>
+      <button type="button" class="ch-ic" id="mcmic" aria-label="Səslə yaz" title="Səslə yaz"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+      <button type="submit" class="ch-send" id="mcsend" aria-label="Göndər"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12l16-8-6 16-2.5-6.5z"/></svg></button>
+    </form>
+    <p class="hint ch-foot" id="mcfoot"></p>
   </div>
   <div class="card" id="m2" hidden></div>
 </section>

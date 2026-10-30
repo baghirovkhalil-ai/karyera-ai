@@ -418,9 +418,10 @@ const Q = {
   "Maaş danışığı": { t: "Bazar araşdırması et, aralıq de, dəyərini nəticələrlə əsaslandır, qapını bağlama.", q: ["Maaş gözləntiniz nə qədərdir?", "Təklif etdiyimiz maaş gözləntinizdən aşağıdır. Nə deyərsiniz?", "Niyə sizə daha çox ödəməliyik?", "Maaşdan başqa hansı şərtlər sizin üçün vacibdir?", "Əvvəlki iş yerinizdə maaşınız nə qədər idi?"] }
 };
 $("#mtip").innerHTML = Object.keys(Q).map(k => `<option>${esc(k)}</option>`).join("");
-let cat, catName, qi = 0, res = [];
+let cat, catName, qi = 0, res = [], mmode = "chat";
 function mprev() {
   const k = $("#mtip").value, isAi = k === AIQ; $("#mvacw").hidden = !isAi;
+  if (mmode === "chat") { $("#mprev").innerHTML = isAi ? `<p class="hint">Müsahibəçi suallarını elandakı tələblərə görə quracaq.</p>` : `<p class="hint">Mövzu: <b>${esc(k)}</b>. Təxminən 6 əsas sual, arada dərinləşdirici suallar. İstədiyin an «Bitir və nəticə» ilə yekun rəy al.</p>`; return }
   $("#mprev").innerHTML = isAi ? `<p class="hint">AI elandakı tələblərə uyğun 5 sual hazırlayacaq. AI cavab verməsə, HR sualları ilə davam edəcək.</p>` : `<b>Bu sessiyanın sualları</b><ol class="qlist">${Q[k].q.map(x => `<li>${esc(x)}</li>`).join("")}</ol>`;
 }
 $("#mtip").onchange = mprev; mprev();
@@ -433,7 +434,14 @@ function nextQ() {
   $("#mh").open = false; $("#mans").value = ""; mui(true);
   if (window.KYHook) KYHook.question(cat.q[qi]);
 }
+$("#mmode").onclick = e => {
+  const b = e.target.closest("button"); if (!b) return; mmode = b.dataset.m;
+  $$("#mmode button").forEach(x => x.classList.toggle("on", x === b));
+  $("#mmodeh").textContent = mmode === "chat" ? "AI müsahibəçi real müsahibədəki kimi yazır: sual verir, cavabına reaksiya verir, dərinləşdirir. Sən də ona sual verə bilərsən. Hər cavabdan sonra kiçik məsləhət görürsən." : "5 sual ardıcıl gəlir, hər cavab struktur, konkretlik və nəticə üzrə qiymətləndirilir.";
+  mprev();
+};
 $("#mgo").onclick = async () => {
+  if (mmode === "chat") return chatStart();
   catName = $("#mtip").value;
   if (catName === AIQ && $("#mvac").value.trim().length < 60) { toast("Vakansiya elanını yapışdır (ən azı bir neçə cümlə)."); return }
   if (!need(2)) return; spend(2);
@@ -486,6 +494,118 @@ function mfin() {
   el.innerHTML = `<div class="big">${av.toFixed(1)}/10</div><p>${av >= 8 ? "Çox yaxşı hazırlıq." : av >= 6 ? "Yaxşıdır: nümunə və rəqəmlərlə daha da gücləndir." : "Hələ məşq lazımdır, sualları yenidən keç."}</p><div class="mt">${res.map((r, i) => `<div class="res-row"><span>${i + 1}. ${esc(cat.q[i])}</span><b>${r.t}/10</b></div>`).join("")}</div><div class="box mt">Ən çox gücləndirməli olduğun cəhət: <b>${wk}</b>.\n${esc(cat.t)}</div><button class="btn mt" id="mre" type="button">Yeni sessiya</button>`;
   $("#mre").onclick = () => { el.hidden = true; $("#m0").hidden = false };
 }
+
+/* ---------- Canlı müsahibə (chat) ---------- */
+const CH = { log: [], n: 0, busy: false, done: false, vac: "" };
+const CH_MAX = 14; // bir sessiyada namizədin maksimum mesajı (xərc nəzarəti)
+function chLang() { return window.KYHook ? KYHook.fbLang(catName) : (catName === "İngilis dilində" ? "ingilis dilində yaz" : "Azərbaycan dilində yaz") }
+function chAdd(who, text, tip) {
+  const el = document.createElement("div"); el.className = "ch-msg " + (who === "ai" ? "ai" : "me");
+  el.innerHTML = `<div class="ch-b">${esc(text).replace(/\n/g, "<br>")}</div>`;
+  $("#mclog").appendChild(el);
+  if (tip) { const t = document.createElement("div"); t.className = "ch-tip"; t.innerHTML = `<b>Məsləhət</b> ${esc(tip)}`; $("#mclog").appendChild(t) }
+  $("#mclog").scrollTop = $("#mclog").scrollHeight;
+  return el;
+}
+function chTyping(on) {
+  let t = $("#mctyping");
+  if (on && !t) { t = document.createElement("div"); t.id = "mctyping"; t.className = "ch-msg ai"; t.innerHTML = `<div class="ch-b ch-dots"><i></i><i></i><i></i></div>`; $("#mclog").appendChild(t); $("#mclog").scrollTop = $("#mclog").scrollHeight }
+  if (!on && t) t.remove();
+  $("#mcsub").textContent = on ? "yazır…" : CH.done ? "müsahibə bitdi" : "onlayn";
+}
+function chUi() {
+  const off = CH.busy || CH.done; $("#mcin").disabled = off; $("#mcsend").disabled = off; $("#mcmic").hidden = !SR || CH.done;
+  $("#mcfoot").textContent = CH.done ? "Müsahibə bitdi. Yekun rəy üçün «Bitir və nəticə» düyməsini bas." : `Mesaj: ${CH.n}/${CH_MAX} · Enter: göndər, Shift+Enter: yeni sətir`;
+  $("#mcend").textContent = CH.done ? "Nəticəni gör" : "Bitir və nəticə";
+}
+function chPrompt() {
+  const d = S.d, cv = [d.vez && "Hədəf vəzifə: " + d.vez, d.hq && "Haqqında: " + d.hq, d.exps.filter(e => e.v || e.s).map(e => `${e.v || ""} ${e.s ? "(" + e.s + ")" : ""} ${e.m || ""}`.trim()).join("; ") && "Təcrübə: " + d.exps.filter(e => e.v || e.s).map(e => `${e.v || ""} ${e.s ? "(" + e.s + ")" : ""}`.trim()).join("; "), d.bac && "Bacarıqlar: " + d.bac].filter(Boolean).join("\n");
+  const tr = CH.log.map(m => (m.r === "ai" ? "Müsahibəçi: " : "Namizəd: ") + m.t).join("\n");
+  const asked = CH.log.filter(m => m.r === "ai").length;
+  return `Sən real iş müsahibəsi aparan təcrübəli, mehriban, amma tələbkar HR müsahibəçisisən. Bu, namizəd üçün məşq müsahibəsidir və canlı yazışma kimi gedir.
+Müsahibə növü: ${catName}.${CH.vac ? "\nVakansiya elanı: " + CH.vac.slice(0, 3000) : ""}${cv ? "\nNamizədin CV-sindən:\n" + cv.slice(0, 1500) : "\nNamizəd CV doldurmayıb."}
+${cat.q.length ? "Bu növ üçün nümunə mövzular (eynən köçürmə, təbii soruş): " + cat.q.join(" | ") : ""}
+Qaydalar:
+- Canlı insan kimi danış: qısa, təbii, 1–3 cümlə. Siyahı, başlıq, emoji yazma.
+- Hər mesajda YALNIZ BİR sual ver. Namizədin son cavabına əvvəl 1 qısa reaksiya ver (məsələn konkret bir detala toxun), sonra ya dərinləşdirici sual ver (cavab ümumi və ya rəqəmsizdirsə), ya da növbəti mövzuya keç.
+- Namizəd sənə sual versə (şirkət, maaş, iş şəraiti), real müsahibəçi kimi qısa və real cavab ver, şirkət haqqında konkret fakt uydurma, ümumi danış, sonra müsahibəni davam etdir.
+- Namizəd mövzudan çox kənara çıxsa, nəzakətlə müsahibəyə qaytar.
+- Təxminən 6 əsas sual ver. İndiyədək ${asked} mesaj yazmısan. 6 əsas sualdan sonra müsahibəni nəzakətlə bitir (təşəkkür et, növbəti addımı de) və "done": true qaytar.
+- Müsahibəçinin mesajlarını ${chLang()}.
+- "tip": namizədin SON cavabına 1 qısa, konkret koç məsləhəti (Azərbaycan dilində, ən çox 20 söz, məsələn "Nəticəni rəqəmlə de: neçə faiz artdı?"). Cavab güclüdürsə nəyin yaxşı olduğunu de. Namizədin son mesajı sual idisə və ya hələ cavab yoxdursa boş qoy.
+YALNIZ JSON qaytar: {"reply":"müsahibəçinin növbəti mesajı","tip":"","done":false}
+
+${tr ? "Yazışma indiyədək:\n" + tr : "Müsahibəni başlat: özünü qısa təqdim et (adın Leyla, HR mütəxəssisi) və ilk sualı ver."}`;
+}
+async function chTurn() {
+  CH.busy = true; chUi(); chTyping(true);
+  let j = null;
+  try { j = await aiJ(chPrompt()); if (!j || !j.reply) throw 0 } catch (e) { j = null }
+  chTyping(false);
+  if (!j) { // AI əlçatmazdırsa: hazır suallarla davam
+    const asked = CH.log.filter(m => m.r === "ai").length, q = (cat.q.length ? cat.q : Q["HR müsahibəsi"].q)[asked];
+    j = q ? { reply: (asked ? "Təşəkkür edirəm. " : "Salam, mən Leylayam, bu gün müsahibəni mən aparacağam. ") + q, tip: "", done: false } : { reply: "Təşəkkür edirəm, bu günlük suallarım bu qədər. Nəticəni tezliklə bildirəcəyik.", tip: "", done: true };
+    if (!CH.warned) { CH.warned = true; toast("AI hazırda cavab vermir, hazır suallarla davam edirik.") }
+  }
+  const lastMe = CH.log.length && CH.log[CH.log.length - 1].r === "me" ? $$("#mclog .ch-msg.me").pop() : null;
+  if (lastMe && j.tip) { const t = document.createElement("div"); t.className = "ch-tip"; t.innerHTML = `<b>Məsləhət</b> ${esc(String(j.tip))}`; lastMe.after(t) }
+  const reply = String(j.reply).trim();
+  CH.log.push({ r: "ai", t: reply }); chAdd("ai", reply);
+  if (window.KYHook) KYHook.question(reply);
+  CH.done = !!j.done || CH.n >= CH_MAX; CH.busy = false; chUi();
+  if (!CH.done) $("#mcin").focus();
+}
+function chatStart() {
+  catName = $("#mtip").value;
+  CH.vac = catName === AIQ ? $("#mvac").value.trim() : "";
+  if (catName === AIQ && CH.vac.length < 60) { toast("Vakansiya elanını yapışdır (ən azı bir neçə cümlə)."); return }
+  if (!need(2)) return; spend(2);
+  cat = clone(Q[catName]);
+  Object.assign(CH, { log: [], n: 0, busy: false, done: false, warned: false });
+  $("#mclog").innerHTML = `<div class="ch-sys">${esc(catName)} · məşq müsahibəsi başladı</div>`;
+  $("#m0").hidden = true; $("#m1").hidden = true; $("#m2").hidden = true; $("#mchat").hidden = false;
+  chUi(); chTurn();
+}
+$("#mcform").onsubmit = e => {
+  e.preventDefault(); if (CH.busy || CH.done) return;
+  const t = $("#mcin").value.trim(); if (!t) return;
+  $("#mcin").value = ""; $("#mcin").style.height = "";
+  CH.n++; CH.log.push({ r: "me", t }); chAdd("me", t); chTurn();
+};
+$("#mcin").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#mcform").requestSubmit() } });
+$("#mcin").addEventListener("input", e => { const t = e.target; t.style.height = ""; t.style.height = Math.min(t.scrollHeight, 140) + "px" });
+$("#mcmic").onclick = () => {
+  try {
+    const r = new SR(); r.lang = window.KYHook ? KYHook.srLang(catName) : "az-AZ"; $("#mcmic").classList.add("on");
+    r.onresult = e => { const v = $("#mcin"); v.value += (v.value ? " " : "") + e.results[0][0].transcript; v.dispatchEvent(new Event("input")) };
+    r.onend = () => $("#mcmic").classList.remove("on"); r.onerror = () => { $("#mcmic").classList.remove("on"); toast("Mikrofona icazə ver və ya yazaraq cavab ver.") }; r.start();
+  } catch (e) { toast("Səslə yazma bu brauzerdə işləmir.") }
+};
+$("#mcend").onclick = async () => {
+  const mine = CH.log.filter(m => m.r === "me");
+  if (mine.length < 2) { chClose(); toast("Müsahibə dayandırıldı. Rəy üçün ən azı 2 cavab lazımdır."); return }
+  const b = $("#mcend"); busy(b, true, "Rəy hazırlanır…"); CH.busy = true; chUi();
+  let r = null;
+  try {
+    r = await aiJ(`Sən təcrübəli HR müsahibəçisisən. Aşağıdakı məşq müsahibəsində namizədin çıxışını qiymətləndir. Müsahibə növü: ${catName}. Rəyi Azərbaycan dilində yaz, namizədə "sən" deyə müraciət et, konkret cavablarına istinad et, uydurma.
+YALNIZ JSON: {"score":1-10,"verdict":"1 cümləlik ümumi qərar (məs: ikinci mərhələyə çağırılardın / hələ məşq lazımdır)","strong":["2-3 güclü tərəf"],"improve":["2-3 konkret inkişaf nöqtəsi"],"best":"ən zəif cavabının daha güclü versiyası, 3-4 cümlə, namizədin öz faktları ilə"}
+Yazışma:
+${CH.log.map(m => (m.r === "ai" ? "Müsahibəçi: " : "Namizəd: ") + m.t).join("\n").slice(-11000)}`);
+    if (!r || !r.score) throw 0;
+  } catch (e) { r = null }
+  busy(b, false); CH.busy = false;
+  const el = $("#m2"); $("#mchat").hidden = true; el.hidden = false;
+  if (!r) {
+    const loc = mine.map(m => evLocal(m.t)), av = loc.reduce((x, y) => x + y.t, 0) / loc.length;
+    el.innerHTML = `<div class="big">${av.toFixed(1)}/10</div><p>${av >= 7 ? "Yaxşı çıxış." : "Cavablarını nümunə və rəqəmlərlə gücləndir."}</p><ul class="mt" style="padding-left:18px">${[...new Set(loc.flatMap(x => x.f))].slice(0, 3).map(x => `<li>${esc(x)}</li>`).join("")}</ul><p class="hint mt">Əsas rəy (AI əlçatmaz idi)</p><button class="btn mt" id="mre" type="button">Yeni müsahibə</button>`;
+  } else {
+    const sc = Math.max(1, Math.min(10, Math.round(+r.score))), li = a => (Array.isArray(a) ? a : []).map(x => `<li>${esc(x)}</li>`).join("");
+    el.innerHTML = `<div class="big">${sc}/10</div><p><b>${esc(r.verdict || "")}</b></p><div class="g2 mt"><div class="box"><b>Güclü tərəflərin</b><ul style="padding-left:18px;margin:6px 0 0">${li(r.strong)}</ul></div><div class="box"><b>İnkişaf etdir</b><ul style="padding-left:18px;margin:6px 0 0">${li(r.improve)}</ul></div></div>${r.best ? `<div class="box ai-ex mt"><b>Daha güclü cavab nümunəsi</b><br>${esc(r.best)}</div>` : ""}<p class="hint mt">AI rəyi · ${mine.length} cavab əsasında</p><div class="row mt"><button class="btn" id="mre" type="button">Yeni müsahibə</button><button class="btn ghost" id="mback" type="button">Yazışmaya qayıt</button></div>`;
+    $("#mback").onclick = () => { el.hidden = true; $("#mchat").hidden = false; chUi() };
+  }
+  $("#mre").onclick = () => { el.hidden = true; $("#m0").hidden = false };
+};
+function chClose() { $("#mchat").hidden = true; $("#m0").hidden = false }
 
 /* ============================================================ Məktub */
 const LT = { app: ["Müraciət", "vakansiyaya"], thx: ["Təşəkkür", "müsahibədən sonra"], fu: ["Follow-up", "cavab gəlməyəndə"] };
