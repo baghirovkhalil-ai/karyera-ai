@@ -3,6 +3,10 @@
 // 2) Qaydalar ödənilsə kredit verilir, ödənilməsə səbəbi qaytarılır.
 // 3) Hər çek (qəbul və ya rədd) Telegram-a göndərilir və Vercel loglarına yazılır.
 // Vercel Environment Variables: GEMINI_API_KEY (vacib), TELEGRAM_BOT_TOKEN və TELEGRAM_CHAT_ID (izləmək üçün), CARD_LAST4 (istəyə bağlı).
+// v3: Supabase qoşulubsa (SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY) hər çek bazaya yazılır, təkrar çek həmişəlik bloklanır,
+// daxil olmuş istifadəçinin krediti serverdəki hesabına əlavə olunur.
+
+import { enabled as supaOn, userFrom, rest, rpc } from "../lib/supa.js";
 
 const PACKS = { p5: { credits: 5, price: 3 }, p20: { credits: 20, price: 9 }, p50: { credits: 50, price: 18 } };
 const LAST4 = process.env.CARD_LAST4 || "7534";
@@ -94,17 +98,28 @@ export default async function handler(req, res) {
   let reason = check(x, pack);
   const dupKey = [x.date, x.time, x.amount, x.transaction_id || ""].join("|");
   if (!reason && seen.has(dupKey)) reason = "Bu çek artıq istifadə olunub.";
+  const user = supaOn() ? await userFrom(req) : null;
+  let balance = null;
+  if (!reason && supaOn()) {
+    try {
+      await rest("payments", { method: "POST", prefer: "return=minimal", body: { id, user_id: user ? user.id : null, pack: b.pack, credits: pack.credits, amount: Number(String(x.amount).replace(",", ".")) || null, receipt_key: dupKey, receipt_date: x.date, receipt_time: x.time, contact: String(b.contact || "").slice(0, 80) } });
+      if (user) balance = await rpc("add_credits", { uid: user.id, n: pack.credits });
+    } catch (e) {
+      if (e.code === "23505" || e.status === 409) reason = "Bu çek artıq istifadə olunub.";
+      else console.error("supabase payment", e && e.message); // baza işləməsə də köhnə qayda ilə davam edir
+    }
+  }
   const ok = !reason;
   if (ok) seen.set(dupKey, id);
 
   const info = [
     "ID: " + id, "Paket: " + pack.credits + " kredit / " + pack.price + " AZN",
     "Çek: " + (x.date || "?") + " " + (x.time || "?") + " · " + (x.amount ?? "?") + " " + (x.currency || "") + " · kart ..." + (x.recipient_last4 || "?") + (x.transaction_id ? " · №" + x.transaction_id : ""),
-    "Əlaqə: " + (String(b.contact || "").slice(0, 80) || "-"), "IP: " + ip, reason ? "Səbəb: " + reason : ""
+    "Əlaqə: " + (String(b.contact || "").slice(0, 80) || "-"), user ? "Hesab: " + (user.email || user.id) : "", "IP: " + ip, reason ? "Səbəb: " + reason : ""
   ].filter(Boolean).join("\n");
   console.log("RECEIPT", ok ? "OK" : "REJECT", info.replace(/\n/g, " | "));
   await notify(ok, info, b64);
 
   if (!ok) return res.status(200).json({ ok: false, reason, id });
-  return res.status(200).json({ ok: true, id, credits: pack.credits, key: dupKey, date: x.date, time: x.time, amount: x.amount });
+  return res.status(200).json({ ok: true, id, credits: pack.credits, key: dupKey, date: x.date, time: x.time, amount: x.amount, balance });
 }

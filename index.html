@@ -3,9 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>KarYera AI — CV, müsahibə, məktub</title>
-<meta name="description" content="Azərbaycan dilində AI karyera köməkçisi: 12 şablonlu CV, müsahibə məşqi, müraciət məktubu, LinkedIn mətni və iş axtarış planı.">
-<meta name="theme-color" content="#C2264B">
+<title>KarYera AI — sənə uyğun işi tap, müraciətə hazırlaş</title>
+<meta name="description" content="Azərbaycan dilində AI iş agenti: iş saytlarından sənə uyğun vakansiyalar, bir kliklə müraciət paketi, səsli müsahibə məşqi, 12 şablonlu CV.">
+<meta name="theme-color" content="#141A33">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="KarYera AI">
+<meta property="og:description" content="Sənə uyğun işi tap, müraciətə bir kliklə hazırlaş.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700&family=Unbounded:wght@500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
@@ -14,13 +17,15 @@
 <div class="app">
 
 <header class="top">
-  <a class="brand" href="#" data-go="cv"><span class="seed" aria-hidden="true"></span>KarYera</a><span class="beta">test</span>
+  <a class="brand" href="#" data-go="job"><img src="assets/logo-mark.svg" alt="" width="34" height="34"><span>KarYera</span></a><span class="beta">AI</span>
   <div class="spacer"></div>
+  <button class="acct" id="acct" type="button" hidden>Daxil ol</button>
   <button class="cred" data-go="buy" type="button" aria-label="Kreditlər"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1l6 5-6 9-6-9z" fill="currentColor"/></svg><b id="cr">3</b> kredit</button>
 </header>
 
 <nav class="tabs" aria-label="Bölmələr">
   <button type="button" class="on" data-t="cv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/></svg>CV</button>
+  <button type="button" data-t="job"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/></svg>İşlər</button>
   <button type="button" data-t="mus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Müsahibə</button>
   <button type="button" data-t="let"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Məktub</button>
   <button type="button" data-t="car"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>Karyera</button>
@@ -34,7 +39,8 @@
     <div>
       <h1>CV-ni yaz, 12 şablondan birini seç, PDF kimi yüklə</h1>
       <p>Yazdıqca önizləmə yenilənir. Şablon, rəng və şrift dəyişmək pulsuzdur; AI yalnız istədiyin yerdə işə düşür.</p>
-      <div class="row"><button class="btn ghost" id="demo" type="button">Nümunə ilə doldur</button><button class="btn ghost" id="clear" type="button">Formanı təmizlə</button></div>
+      <div class="row"><button class="btn" id="vprof" type="button">Danış, CV-ni yazım <span class="cost">2 kredit</span></button><button class="btn ghost" id="oldcv" type="button">Köhnə CV-ni yüklə <span class="cost">2 kredit</span></button></div>
+      <div class="row mt"><button class="btn ghost sm" id="demo" type="button">Nümunə ilə doldur</button><button class="btn ghost sm" id="clear" type="button">Formanı təmizlə</button></div>
     </div>
     <div class="fan stack" id="fan" aria-hidden="true"></div>
   </div>
@@ -105,11 +111,42 @@
   <button class="btn ink fab" id="fab" type="button">Önizləməyə bax</button>
 </section>
 
+<!-- ================= İşlər ================= -->
+<section id="job" hidden>
+  <div class="job-hero">
+    <svg class="route" viewBox="0 0 600 220" aria-hidden="true" preserveAspectRatio="none"><path d="M-10 200 C 120 190, 160 120, 260 120 S 420 70, 520 40" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="2 9" stroke-linecap="round"/><circle cx="532" cy="34" r="7"/></svg>
+    <div class="jh-text">
+      <h2>Sənə uyğun işlər</h2>
+      <p>Elanlar bir neçə iş saytından toplanır və CV-nə görə sıralanır. Bəyəndiyin elan üçün bir kliklə müraciət paketi hazırla.</p>
+    </div>
+    <form class="jsearch" id="jform" onsubmit="return false">
+      <label class="grow">Vəzifə və ya açar söz<input id="jq" placeholder="Satış meneceri, SMM, mühasib" autocomplete="off"></label>
+      <div class="jmode-w"><span class="ctl-l">Harada</span><div class="seg" id="jmode"><button type="button" class="on" data-m="az">Azərbaycan</button><button type="button" data-m="remote">Uzaqdan / xaricə</button></div></div>
+      <button class="btn" id="jgo" type="submit">İşləri göstər</button>
+    </form>
+  </div>
+  <div class="row jtools"><button class="btn ghost sm" id="jadd" type="button">Elanın linkini və ya mətnini əlavə et</button><button class="btn ghost sm" id="jtg" type="button" hidden>Telegram-da hər səhər al</button><span class="hint" id="jsrc"></span></div>
+  <div class="msg" id="jfollow" hidden></div>
+  <div class="card" id="jpaste" hidden>
+    <label>Vakansiyanın linki<input id="jurl" placeholder="https://boss.az/vacancies/..." inputmode="url"></label>
+    <label class="mt">və ya elanın mətni<textarea id="jtxt" style="min-height:110px" placeholder="Elanı bura yapışdır"></textarea></label>
+    <div class="row mt"><button class="btn" id="jpgo" type="button">Müraciət paketini hazırla <span class="cost">2 kredit</span></button><button class="btn ghost" id="jpx" type="button">Bağla</button></div>
+  </div>
+  <div class="jremote" id="jremote" hidden>
+    <b>Xaricə müraciət üçün hazırlıq</b>
+    <p class="hint">Xarici şirkətlər ingiliscə, sadə (ATS) CV gözləyir. «Uyğunluq» sütunu elanın Azərbaycandan müraciətə açıq olub-olmadığını göstərir.</p>
+    <div class="row mt"><button class="btn ink sm" id="jen" type="button">CV-ni ingiliscəyə çevir <span class="cost">1 kredit</span></button><button class="btn ghost sm" id="jats" type="button">ATS şablonunu seç</button></div>
+  </div>
+  <div class="jlist" id="jlist"></div>
+</section>
+
 <!-- ================= Müsahibə ================= -->
 <section id="mus" hidden>
   <div class="pane-h"><h2>Müsahibə məşqi</h2><p>5 sual, hər cavaba struktur, konkretlik və nəticə üzrə bal. Cavabı yenidən yazmaq pulsuzdur.</p></div>
   <div class="card" id="m0">
-    <label>Müsahibə növü<select id="mtip"></select></label>
+    <div class="g2"><label>Müsahibə növü<select id="mtip"></select></label>
+      <label>Müsahibə dili<select id="mlang"><option value="az">Azərbaycan</option><option value="en">English</option><option value="ru">Русский</option></select></label></div>
+    <label class="chk mt"><input type="checkbox" id="mspeak" checked>Sualları səslə oxu (səslə cavab üçün «Səslə cavab ver»)</label>
     <div id="mvacw" class="mt" hidden><label>Vakansiya elanının mətni<textarea id="mvac" style="min-height:130px" placeholder="Elanı bura yapışdır: AI sualları bu tələblərə görə hazırlayacaq."></textarea></label></div>
     <div id="mprev" class="mt"></div>
     <button class="btn mt" id="mgo" type="button">Sessiyaya başla <span class="cost">2 kredit</span></button>
@@ -174,6 +211,13 @@
     <p class="muted">Bacarıq və təcrübənə görə ən uyğun 3 sahə və nəyi öyrənməli olduğun.</p>
     <button class="btn mt" id="kgo" type="button">Sahələri göstər <span class="cost">1 kredit</span></button>
     <div id="kout"></div>
+    <div class="st-box">
+      <b>Bacarıq tərcüməçisi</b>
+      <p class="muted">İxtisasın üzrə iş tapmaq çətindirsə, AI bacarıqlarının uyğun gəldiyi 3 peşəni, çatışmayanları və 30 günlük pulsuz öyrənmə planını göstərir.</p>
+      <label class="mt">İxtisasın və maraqların (istəyə bağlı)<input id="stin" placeholder="Filologiya; insanlarla işləməyi, yazmağı sevirəm"></label>
+      <button class="btn mt" id="stgo" type="button">3 peşə göstər <span class="cost">1 kredit</span></button>
+      <div id="stout"></div>
+    </div>
   </div>
   <div id="cv3" class="card" hidden>
     <div class="g2"><label>Həftəlik müraciət sayı<input id="pn1" type="number" value="10" min="1"></label><label>Həftəlik öyrənmə (saat)<input id="pn2" type="number" value="4" min="0"></label></div>
@@ -248,6 +292,17 @@
 <section id="log" hidden class="log">
   <div class="pane-h"><h2>Yeniliklər</h2></div>
   <div class="card">
+    <h3>Versiya 3: iş agenti</h3>
+    <ul>
+      <li>Yeni bölmə «İşlər»: bir neçə iş saytından vakansiyalar, CV-nə görə uyğunluq faizi.</li>
+      <li>Bir kliklə müraciət paketi: uyğunlaşdırılmış «Haqqında», məktub, email və 5 müsahibə sualı.</li>
+      <li>«Müraciət etdim» elanı trekerə əlavə edir, 5 gün sonra follow-up xatırladır.</li>
+      <li>Danış, CV-ni yazım: 2-3 dəqiqə özün haqqında danış, AI CV formasını doldurur. Köhnə CV-ni (PDF, şəkil) yükləmək də olar.</li>
+      <li>Müsahibə AZ, EN, RU dillərində; suallar səslə oxunur.</li>
+      <li>Bacarıq tərcüməçisi: ixtisasına uyğun 3 alternativ peşə və 30 günlük plan.</li>
+      <li>Uzaqdan / xaricə iş rejimi: Azərbaycandan müraciətə açıq elanlar.</li>
+      <li>Yeni dizayn və loqo.</li>
+    </ul>
     <h3>Versiya 2: sıfırdan yenilənmiş</h3>
     <ul>
       <li>12 CV şablonu: Müasir, Yan panel, Kreativ, Zaman xətti, Bento, Jurnal, Diaqonal, Monoqram, Rəhbər, Klassik, Minimal, ATS.</li>
@@ -264,16 +319,37 @@
       <li>Kartdan karta ödəniş: çeki yüklə, AI tarix-saatı, məbləği və alıcı kartı yoxlayır, kredit dərhal əlavə olunur.</li>
     </ul>
     <h3>Növbəti</h3>
-    <ul><li>Onlayn kartla ödəniş (çeksiz)</li><li>Hesab: məlumatı bütün cihazlarda saxlamaq</li><li>Paylaşılan CV linki</li></ul>
+    <ul><li>Hesab: kredit və CV bütün cihazlarda (hazırlanıb, qoşulur)</li><li>Telegram-da hər səhər 3 uyğun iş</li><li>Paylaşılan CV linki</li></ul>
   </div>
 </section>
 </main>
 
-<footer class="foot">Kredit bu brauzerdə saxlanır · <button type="button" data-go="log">Yeniliklər</button></footer>
+<footer class="foot"><p id="fcred">Kredit bu brauzerdə saxlanır.</p><p>AI üçün Google Gemini-nin pulsuz versiyası istifadə olunur: AI-a göndərilən mətn Google tərəfindən məhsullarını yaxşılaşdırmaq üçün istifadə oluna bilər. CV formasından AI sorğularına telefon və email əlavə olunmur; səslə profil və köhnə CV yükləyəndə fayl tam göndərilir.</p><p><button type="button" data-go="log">Yeniliklər</button></p></footer>
 </div>
+
+<dialog class="dlg" id="vdlg" aria-labelledby="vdlg-h">
+  <form method="dialog" class="dlg-x"><button aria-label="Bağla">×</button></form>
+  <h3 id="vdlg-h">Danış, CV-ni yazım</h3>
+  <p class="muted">2-3 dəqiqə özün haqqında danış. Bu suallara cavab ver, sıra vacib deyil:</p>
+  <ol class="vq"><li>Adın və hansı vəzifədə işləmək istəyirsən?</li><li>Harada, nə vaxtdan nə vaxtadək işləmisən, nə etmisən? Rəqəmlə nəticə varsa de.</li><li>Harada, hansı ixtisasda oxumusan?</li><li>Hansı proqramları, bacarıqları, dilləri bilirsən?</li></ol>
+  <div class="rec"><button class="recb" id="vrec" type="button" aria-pressed="false"><span></span></button><div><b id="vstat">Başlamaq üçün dairəyə bas</b><div class="hint" id="vtime">0:00 / 3:00</div></div></div>
+  <div class="row mt"><button class="btn" id="vsend" type="button" disabled>CV-ni doldur <span class="cost">2 kredit</span></button><span class="hint" id="vnote"></span></div>
+</dialog>
+<input type="file" id="oldf" accept="application/pdf,image/*" hidden>
+
+<dialog class="dlg wide" id="pdlg" aria-labelledby="pdlg-h"><form method="dialog" class="dlg-x"><button aria-label="Bağla">×</button></form><div id="pbody"></div></dialog>
+
+<dialog class="dlg" id="adlg" aria-labelledby="adlg-h">
+  <form method="dialog" class="dlg-x"><button aria-label="Bağla">×</button></form>
+  <h3 id="adlg-h">Hesaba daxil ol</h3>
+  <p class="muted">Kredit, CV və müraciətlərin bütün cihazlarda saxlanır. Emailinə giriş linki göndəririk, şifrə lazım deyil.</p>
+  <div id="abody"><label class="mt">Email<input id="aem" type="email" autocomplete="email" placeholder="ad@mail.com"></label>
+  <button class="btn wide mt" id="ago" type="button">Giriş linkini göndər</button></div>
+</dialog>
 
 <div id="printArea"></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <script src="app.js"></script>
+<script src="agent.js"></script>
 </body>
 </html>

@@ -28,7 +28,7 @@ function need(n) {
   m.textContent = "Kredit çatmır: bu əməliyyat " + n + " kredit tələb edir. Paket seç: kartla ödə, çeki yüklə, kredit dərhal əlavə olunsun.";
   tab("buy"); return false;
 }
-const spend = n => { credits -= n; showCr() };
+const spend = n => { credits -= n; showCr(); if (window.KYHook) KYHook.spend(n) };
 
 /* ---------- AI ---------- */
 async function ai(p) {
@@ -40,7 +40,7 @@ async function ai(p) {
 async function aiJ(p) { const t = await ai(p); const m = t.match(/[\[{][\s\S]*[\]}]/); return JSON.parse(m ? m[0] : t) }
 
 /* ---------- naviqasiya ---------- */
-const TABS = ["cv", "mus", "let", "car", "buy", "log"];
+const TABS = ["cv", "job", "mus", "let", "car", "buy", "log"];
 function tab(t) {
   TABS.forEach(x => $("#" + x).hidden = x !== t);
   $$(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
@@ -88,7 +88,7 @@ let S = { d: blank(), tp: "modern", ac: "#C2264B", font: "", photo: true, lang: 
   const b = blank(); Object.keys(b).forEach(k => { if (S.d[k] == null) S.d[k] = b[k] });
   if (!S.d.exps.length) S.d.exps = b.exps; if (!S.d.edu.length) S.d.edu = b.edu;
 }
-const save = () => ls.s("karyera_v4", JSON.stringify(S));
+const save = () => { ls.s("karyera_v4", JSON.stringify(S)); if (window.KYHook) KYHook.saved() };
 
 const isEmpty = d => !d.ad && !d.vez && !d.bac && !d.exps.some(e => e.t || e.s || e.v);
 function yrs(d) {
@@ -408,6 +408,7 @@ function nextQ() {
   $("#mq").textContent = cat.q[qi];
   $("#mhint").innerHTML = esc(cat.t) + "<br><br>Çərçivə: <b>Situasiya</b> (1 cümlə) → <b>Hərəkət</b> (nə etdin) → <b>Nəticə</b> (rəqəmlə).";
   $("#mh").open = false; $("#mans").value = ""; mui(true);
+  if (window.KYHook) KYHook.question(cat.q[qi]);
 }
 $("#mgo").onclick = async () => {
   catName = $("#mtip").value;
@@ -417,7 +418,7 @@ $("#mgo").onclick = async () => {
   if (catName === AIQ) {
     const b = $("#mgo"); busy(b, true, "Suallar hazırlanır…");
     try {
-      const j = await aiJ("Sən təcrübəli HR müsahibəçisisən. Aşağıdakı vakansiya elanına görə namizədə veriləcək 5 müsahibə sualı yaz: 2 davranış (keçmiş təcrübə), 2 rola xas texniki/peşəkar, 1 motivasiya sualı. Elan hansı dildədirsə o dildə yaz. YALNIZ JSON massiv qaytar: [\"sual1\", ...]\nElan: " + $("#mvac").value.trim().slice(0, 3500));
+      const j = await aiJ("Sən təcrübəli HR müsahibəçisisən. Aşağıdakı vakansiya elanına görə namizədə veriləcək 5 müsahibə sualı yaz: 2 davranış (keçmiş təcrübə), 2 rola xas texniki/peşəkar, 1 motivasiya sualı. " + (window.KYHook ? KYHook.qLang() : "Elan hansı dildədirsə o dildə yaz.") + " YALNIZ JSON massiv qaytar: [\"sual1\", ...]\nElan: " + $("#mvac").value.trim().slice(0, 3500));
       if (!Array.isArray(j) || j.length < 5) throw 0;
       cat.q = j.slice(0, 5).map(String);
     } catch (e) { cat = clone(Q["HR müsahibəsi"]); catName = "HR müsahibəsi"; toast("AI sualları hazırlaya bilmədi, HR sualları ilə davam edirik.") }
@@ -427,7 +428,7 @@ $("#mgo").onclick = async () => {
 };
 $("#mic").onclick = () => {
   try {
-    const r = new SR(); r.lang = catName === "İngilis dilində" ? "en-US" : "az-AZ"; $("#mic").textContent = "Dinləyirəm…";
+    const r = new SR(); r.lang = window.KYHook ? KYHook.srLang(catName) : (catName === "İngilis dilində" ? "en-US" : "az-AZ"); $("#mic").textContent = "Dinləyirəm…";
     r.onresult = e => { $("#mans").value += ($("#mans").value ? " " : "") + e.results[0][0].transcript };
     r.onend = () => $("#mic").textContent = "Səslə cavab ver"; r.onerror = () => $("#mic").textContent = "Mikrofon icazəsi yoxdur"; r.start();
   } catch (e) { $("#mic").textContent = "Səs bu brauzerdə işləmir" }
@@ -445,7 +446,7 @@ $("#mev").onclick = async () => {
   busy($("#mev"), true, "AI oxuyur…");
   let r = evLocal(a), mdl = "", isAi = false;
   try {
-    const j = await aiJ(`Sən təcrübəli HR müsahibəçisisən. Müsahibə növü: ${catName}. Namizədin hədəf vəzifəsi: ${S.d.vez || "göstərilməyib"}. Sual: ${cat.q[qi]}\nNamizədin cavabı: ${a}\n\nCavabı qiymətləndir. Rəyi Azərbaycan dilində yaz (sual ingiliscədirsə ingiliscə). YALNIZ JSON qaytar: {"s":struktur 1-10,"e":konkretlik 1-10,"r":nəticə 1-10,"f":["2-3 qısa, konkret məsləhət"],"m":"namizədin öz faktlarına əsaslanan 3-4 cümləlik daha güclü cavab nümunəsi, yeni fakt və rəqəm uydurma"}`);
+    const j = await aiJ(`Sən təcrübəli HR müsahibəçisisən. Müsahibə növü: ${catName}. Namizədin hədəf vəzifəsi: ${S.d.vez || "göstərilməyib"}. Sual: ${cat.q[qi]}\nNamizədin cavabı: ${a}\n\nCavabı qiymətləndir. Rəyi ${window.KYHook ? KYHook.fbLang(catName) : "Azərbaycan dilində yaz (sual ingiliscədirsə ingiliscə)"}. YALNIZ JSON qaytar: {"s":struktur 1-10,"e":konkretlik 1-10,"r":nəticə 1-10,"f":["2-3 qısa, konkret məsləhət"],"m":"namizədin öz faktlarına əsaslanan 3-4 cümləlik daha güclü cavab nümunəsi, yeni fakt və rəqəm uydurma"}`);
     if (j && j.s && j.e && j.r) { const cl = x => Math.max(1, Math.min(10, Math.round(+x))); r = { s: cl(j.s), e: cl(j.e), r: cl(j.r), f: (j.f || []).map(String) }; r.t = cl(r.s * .3 + r.e * .35 + r.r * .35); mdl = j.m || ""; isAi = true }
   } catch (e) { }
   res[qi] = r; busy($("#mev"), false); mui(false);
@@ -575,7 +576,7 @@ $("#pgo").onclick = () => {
 let apps = []; try { apps = JSON.parse(ls.g("karyera_apps_v3")) || [] } catch (e) { }
 const ST = ["Göndərildi", "Cavab gözlənilir", "Müsahibə", "Təklif", "Rədd"];
 function rApps() {
-  ls.s("karyera_apps_v3", JSON.stringify(apps));
+  ls.s("karyera_apps_v3", JSON.stringify(apps)); if (window.KYHook) KYHook.appsSaved();
   $("#kan").innerHTML = ST.map(s => { const it = apps.map((a, i) => [a, i]).filter(x => x[0].s === s); return `<div class="col"><h4>${s}<span>${it.length}</span></h4>${it.map(([a, i]) => `<div class="kc"><b>${esc(a.c)}</b>${a.v ? `<span class="hint">${esc(a.v)}</span>` : ""}<div class="row"><select data-i="${i}" aria-label="Status">${ST.map(x => `<option${x === a.s ? " selected" : ""}>${x}</option>`).join("")}</select><button class="x-del" type="button" data-d="${i}">Sil</button></div></div>`).join("")}</div>` }).join("");
   $("#kstat").textContent = apps.length ? `Cəmi ${apps.length} müraciət · ${apps.filter(a => a.s === "Müsahibə" || a.s === "Təklif").length} müsahibə və ya təklif` : "Hələ müraciət yoxdur. Göndərdiyin hər müraciəti buraya əlavə et.";
   $$("#kan select").forEach(s => s.onchange = () => { apps[+s.dataset.i].s = s.value; rApps() });
@@ -628,11 +629,11 @@ $("#rsend").onclick = async () => {
   if (!rcptB64) { toast("Əvvəlcə çekin şəklini seç."); return }
   const b = $("#rsend"), out = $("#rres"); busy(b, true, "Çek yoxlanılır…"); out.innerHTML = "";
   try {
-    const r = await fetch("/api/receipt", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pack: pk, image: rcptB64, contact: $("#rcon").value.trim() }) });
+    const r = await fetch("/api/receipt", { method: "POST", headers: Object.assign({ "Content-Type": "application/json" }, window.KYHook ? KYHook.auth() : {}), body: JSON.stringify({ pack: pk, image: rcptB64, contact: $("#rcon").value.trim() }) });
     const j = await r.json().catch(() => ({ ok: false, reason: "Server cavab vermədi. Bir az sonra yenidən sına." }));
     if (j.ok) {
       if (pays.some(p => p.key === j.key)) { out.innerHTML = `<div class="bad-box">Bu çek artıq istifadə olunub.</div>`; return }
-      credits += j.credits; showCr();
+      if (j.balance != null) credits = j.balance; else credits += j.credits; showCr();
       pays.push({ id: j.id, key: j.key, date: j.date, time: j.time, amount: j.amount, credits: j.credits }); ls.s("karyera_pays", JSON.stringify(pays)); rPays();
       out.innerHTML = `<div class="ok-box"><b>+${j.credits} kredit əlavə olundu.</b><br>Çek: ${esc(j.date)} ${esc(j.time)}, ${esc(j.amount)} AZN. Qəbz nömrəsi: ${esc(j.id)}</div>`;
       rcptB64 = ""; $("#rcptp").hidden = true; $("#rcptt").textContent = "Şəkli seç və ya bura at"; $("#rcpt").value = "";
