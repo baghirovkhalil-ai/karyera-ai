@@ -37,13 +37,14 @@ Heç nə uydurma: şəkildə olmayan sahəni null yaz.`;
       headers: { "content-type": "application/json", "x-goog-api-key": key },
       body: JSON.stringify({
         contents: [{ role: "user", parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: b64 } }] }],
-        generationConfig: { temperature: 0, maxOutputTokens: 512, responseMimeType: "application/json" },
+        // 512 azdır: yeni Gemini modellərində «düşünmə» tokenləri də bu limitdən yeyir, JSON yarımçıq kəsilirdi
+        generationConfig: { temperature: 0, maxOutputTokens: 4096, responseMimeType: "application/json" },
       }),
     });
     if (r.status === 404) continue;
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error("gemini " + r.status + " " + ((j.error && j.error.message) || ""));
-    const t = ((j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || []).map(p => p.text || "").join("");
+    const t = ((j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || []).map(p => (p.thought ? "" : p.text || "")).join(""); // düşünmə hissəsini cavaba qatma
     const mm = t.match(/\{[\s\S]*\}/);
     return JSON.parse(mm ? mm[0] : t);
   }
