@@ -44,13 +44,13 @@ const GIFTS = { "251825dfe09cba2443cc0f90dbd8b4db41423a374575151e3213bc45c5e604c
 })();
 
 /* ---------- AI ---------- */
-async function ai(p) {
-  const r = await fetch("/api/ai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: p }) });
-  if (!r.ok) throw new Error("ai " + r.status);
+async function ai(p, json) {
+  const r = await fetch("/api/ai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: p, json: !!json, max: 8192 }) });
+  if (!r.ok) throw new Error(r.status === 429 ? "limit" : "ai " + r.status);
   const j = await r.json(); if (!j.text) throw new Error("boş");
   return j.text.trim();
 }
-async function aiJ(p) { const t = await ai(p); const m = t.match(/[\[{][\s\S]*[\]}]/); return JSON.parse(m ? m[0] : t) }
+async function aiJ(p) { const t = (await ai(p, true)).replace(/```(?:json)?/gi, ""); const m = t.match(/[\[{][\s\S]*[\]}]/); return JSON.parse(m ? m[0] : t) }
 
 /* ---------- naviqasiya ---------- */
 const TABS = ["home", "cv", "job", "mus", "let", "car", "buy", "log"];
@@ -334,7 +334,7 @@ async function translate(btn) {
     toast("Tərcümə hazırdır. AZ və EN arasında pulsuz keçə bilərsən.");
     busy(btn, false); render(); $$("#lang button").forEach(x => x.classList.toggle("on", x.dataset.l === "en"));
     return true;
-  } catch (e) { busy(btn, false); toast("Tərcümə alınmadı, kredit tutulmadı. Bir az sonra yenidən sına."); return false }
+  } catch (e) { busy(btn, false); toast(String(e && e.message) === "limit" ? "AI-nin pulsuz limiti bu an dolub. 1-2 dəqiqə sonra sına, kredit tutulmadı." : "Tərcümə alınmadı, kredit tutulmadı. Bir az sonra yenidən sına.", 6000); return false }
 }
 
 /* --- AI: Haqqında variantları --- */

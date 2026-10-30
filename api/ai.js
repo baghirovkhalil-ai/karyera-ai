@@ -67,7 +67,8 @@ export default async function handler(req, res) {
     file = { mime, data };
   }
   // Qeyd: yeni Gemini modellərində «düşünmə» tokenləri də bu limitdən yeyir, ona görə fayl oxuma üçün limit böyükdür
-  const maxTokens = Math.min(file ? 12000 : 8192, Math.max(256, +b.max || 2048));
+  // Alt hədd 6144: kiçik limitdə model düşünməyə xərcləyib cavabı yarımçıq kəsir (JSON pozulur)
+  const maxTokens = Math.min(file ? 12000 : 8192, Math.max(6144, +b.max || 8192));
 
   try {
     const out = await callGemini(key, prompt, file, maxTokens, !!b.json);
