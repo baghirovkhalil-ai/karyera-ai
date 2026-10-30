@@ -141,6 +141,8 @@ textarea{min-height:92px;resize:vertical;line-height:1.55}
 .fan .th:nth-child(2){left:calc(50% - 95px);top:0;z-index:2}
 .fan .th:nth-child(3){left:calc(50% + 60px);top:40px;transform:rotate(8deg)}
 .fan.stack .th{left:calc(50% - 95px);transform:rotate(0)}
+/* kiçik noutbuk (1181–1439px): sağ kart səhifədən çıxıb üfüqi sürüşmə yaradırdı */
+@media (min-width:1181px) and (max-width:1439px){.fan .th{width:160px}.fan .th:nth-child(1){left:calc(50% - 200px)}.fan .th:nth-child(2){left:calc(50% - 80px)}.fan .th:nth-child(3){left:calc(50% + 40px)}.fan.stack .th{left:calc(50% - 80px)}}
 .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:36px}
 .stat{position:relative;display:flex;flex-direction:column;gap:2px;text-align:left;border:1px solid var(--line);background:var(--card);border-radius:var(--r);padding:16px 18px;cursor:pointer;box-shadow:var(--sh-xs);transition:border-color .15s,box-shadow .15s,transform .15s;color:var(--ink)}
 .stat:hover{border-color:var(--mut-2);box-shadow:var(--sh-md);transform:translateY(-1px)}

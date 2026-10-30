@@ -268,7 +268,12 @@ $("#form").addEventListener("input", e => {
 });
 $("#form").addEventListener("click", e => {
   const b = e.target.closest("[data-del]"); if (!b) return;
-  const [n, i] = b.dataset.del.split(":"); S.d[n].splice(+i, 1); renderList(n); save(); sched();
+  const [n, i] = b.dataset.del.split(":"); S.d[n].splice(+i, 1);
+  if (S.en && Array.isArray(S.en[n])) { // EN tərcümə indekslə birləşir: eyni elementi orada da sil, yoxsa sürüşür
+    S.en[n].splice(+i, 1);
+    try { const src = JSON.parse(S.enSrc); if (Array.isArray(src[n])) { src[n].splice(+i, 1); S.enSrc = JSON.stringify(src) } } catch (e) { }
+  }
+  renderList(n); save(); sched();
 });
 $("#add-exps").onclick = () => { S.d.exps.push({ v: "", s: "", m: "", t: "" }); renderList("exps"); save(); $$("#exps .item").pop().querySelector("input").focus() };
 $("#add-edu").onclick = () => { S.d.edu.push({ i: "", m: "", y: "" }); renderList("edu"); save(); $$("#edu .item").pop().querySelector("input").focus() };
@@ -407,7 +412,7 @@ async function downloadPdf(html, name, btn) {
 }
 const fname = (suf) => ((S.d.ad || "KarYera").trim().replace(/\s+/g, "_").replace(/[^\p{L}\p{N}_-]/gu, "") || "KarYera") + "_" + suf + ".pdf";
 function payCv() {
-  if (isEmpty(S.d)) { toast("Əvvəlcə öz məlumatını yaz və ya «Nümunə ilə doldur» düyməsini bas."); return false }
+  if (isEmpty(S.d)) { toast("Əvvəlcə öz məlumatını yaz və ya «Nümunə» düyməsini bas."); return false }
   if (!S.paid) { if (!need(1)) return false; spend(1); S.paid = true; save(); render() }
   return true;
 }
@@ -789,7 +794,7 @@ $("#rsend").onclick = async () => {
     const j = await r.json().catch(() => ({ ok: false, reason: "Server cavab vermədi. Bir az sonra yenidən sına." }));
     if (j.ok) {
       if (pays.some(p => p.key === j.key)) { out.innerHTML = `<div class="bad-box">Bu çek artıq istifadə olunub.</div>`; return }
-      if (j.balance != null) credits = j.balance; else credits += j.credits; showCr();
+      if (j.balance != null) credits = j.balance; else credits += j.credits; showCr(); $("#buymsg").hidden = true; // «Kredit çatmır» xəbərdarlığı artıq köhnədir
       pays.push({ id: j.id, key: j.key, date: j.date, time: j.time, amount: j.amount, credits: j.credits }); ls.s("karyera_pays", JSON.stringify(pays)); rPays();
       out.innerHTML = `<div class="ok-box"><b>+${j.credits} kredit əlavə olundu.</b><br>Çek: ${esc(j.date)} ${esc(j.time)}, ${esc(j.amount)} AZN. Qəbz nömrəsi: ${esc(j.id)}</div>`;
       rcptB64 = ""; $("#rcptp").hidden = true; $("#rcptt").textContent = "Şəkli seç və ya bura at"; $("#rcpt").value = "";

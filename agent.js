@@ -126,7 +126,13 @@
     jmode = b.dataset.m; $$("#jmode button").forEach(x => x.classList.toggle("on", x === b));
     $("#jremote").hidden = jmode !== "remote"; loadJobs();
   });
-  $("#jen").onclick = async () => { const b = $("#jen"); if (await translate(b)) toast("CV ingiliscədir. Paketlər xarici elanlar üçün ingiliscə hazırlanacaq.") };
+  $("#jen").onclick = async () => {
+    const b = $("#jen");
+    if (isEmpty(S.d)) { toast("Əvvəlcə öz CV məlumatını yaz, sonra tərcümə et."); tab("cv"); return }
+    // tərcümə artıq aktualdırsa yenidən kredit tutma, sadəcə EN-ə keç
+    if (S.en && S.enSrc === JSON.stringify(trSrc())) { S.lang = "en"; save(); $$("#lang button").forEach(x => x.classList.toggle("on", x.dataset.l === "en")); render(); toast("CV artıq ingiliscədir. Paketlər xarici elanlar üçün ingiliscə hazırlanacaq."); return }
+    if (await translate(b)) toast("CV ingiliscədir. Paketlər xarici elanlar üçün ingiliscə hazırlanacaq.");
+  };
   $("#jats").onclick = () => { S.tp = "ats"; save(); render(); toast("ATS (sadə) şablonu seçildi: xarici şirkətlərin sistemi onu asan oxuyur.") };
   $("#jlist").addEventListener("click", e => {
     const p = e.target.closest("[data-pk]"), a = e.target.closest("[data-ap]");
@@ -155,7 +161,7 @@
     const [a, i] = due[0];
     box.hidden = false;
     box.innerHTML = `<b>Follow-up vaxtıdır:</b> ${esc(a.c)}${a.v ? ", " + esc(a.v) : ""}. ${a.at ? azDate(a.at) + " müraciət etmisən, cavab yoxdur." : ""}${due.length > 1 ? ` Daha ${due.length - 1} müraciət gözləyir.` : ""}<div class="row mt"><button class="btn sm" type="button" id="fuw">Follow-up məktubu yaz</button><button class="btn ghost sm" type="button" id="fus">3 gün sonra xatırlat</button></div>`;
-    $("#fuw").onclick = () => { lt.type = "fu"; pickers(); $("#lc").value = a.c; $("#lp").value = a.v || S.d.vez; $("#lnote2").value = a.at ? azDate(a.at) + " tarixində müraciət etmişəm." : ""; a.fu = addDays(today(), 5); rApps(); tab("let") };
+    $("#fuw").onclick = () => { lt.type = "fu"; pickers(); $("#lc").value = a.c; $("#lp").value = a.v || S.d.vez; $("#lnote2").value = a.at ? azDate(a.at) + " tarixində" : ""; /* sahə «Nə vaxt müraciət etmisən?»: yalnız tarix, cümləni şablon tamamlayır */ a.fu = addDays(today(), 5); rApps(); tab("let") };
     $("#fus").onclick = () => { apps[i].fu = addDays(today(), 3); rApps() };
   }
 
@@ -414,6 +420,6 @@ Namizəd: ${JSON.stringify(cvBrief(S.d))}
   $$('.tabs button[data-t="job"], [data-go="job"]').forEach(x => x.addEventListener("click", autoJobs));
   if (TABS.includes(h)) tab(h); else tab("home");
   if (!$("#job").hidden) autoJobs();
-  window.addEventListener("hashchange", () => { const x = location.hash.slice(1); if (TABS.includes(x)) tab(x) });
+  window.addEventListener("hashchange", () => { const x = location.hash.slice(1); if (TABS.includes(x)) { tab(x); if (x === "job") autoJobs() } });
   initAuth();
 })();
