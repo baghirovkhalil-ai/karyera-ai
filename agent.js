@@ -33,13 +33,13 @@
       followups();
     },
     auth() { return KY.token ? { Authorization: "Bearer " + KY.token } : {} },
-    question(q) { if ($("#mspeak") && $("#mspeak").checked) speak(q, catLang(typeof catName === "string" ? catName : "")) },
+    question() { }, // AI səslə oxuma çıxarıldı (brauzerlərdə Azərbaycan səsi yoxdur)
     srLang(cat) { return { az: "az-AZ", en: "en-US", ru: "ru-RU" }[catLang(cat)] },
     fbLang(cat) { return { az: "Azərbaycan dilində yaz", en: "ingilis dilində yaz", ru: "rus dilində yaz" }[catLang(cat)] },
     qLang() { return { az: "Sualları Azərbaycan dilində yaz.", en: "Sualları ingilis dilində yaz.", ru: "Sualları rus dilində yaz." }[mlang()] }
   };
 
-  /* ======================= Müsahibə: dil və səs ======================= */
+  /* ======================= Müsahibə: dil ======================= */
   Q["Rus dilində"] = { t: "Отвечай 3–4 предложениями: ситуация, действие, результат (с цифрой).", q: ["Расскажите о себе.", "Почему вы хотите работать в нашей компании?", "Расскажите о сложной ситуации на работе и как вы её решили.", "Какие ваши сильные и слабые стороны?", "Где вы видите себя через 3 года?"] };
   $("#mtip").innerHTML = Object.keys(Q).map(k => `<option>${esc(k)}</option>`).join("");
   mprev();
@@ -48,18 +48,6 @@
     if (cur !== AIQ && !String(cur).startsWith("Bu vakansiya")) $("#mtip").value = l === "en" ? "İngilis dilində" : l === "ru" ? "Rus dilində" : (cur === "İngilis dilində" || cur === "Rus dilində" ? "HR müsahibəsi" : cur);
     mprev();
   };
-  let voiceWarned = false;
-  function speak(text, l) {
-    if (!("speechSynthesis" in window) || !text) return;
-    try {
-      speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text), want = { az: ["az", "tr"], en: ["en"], ru: ["ru"] }[l] || ["az", "tr"];
-      const vs = speechSynthesis.getVoices(), v = want.map(p => vs.find(x => x.lang && x.lang.toLowerCase().startsWith(p))).find(Boolean);
-      if (v) { u.voice = v; u.lang = v.lang } else { u.lang = { az: "az-AZ", en: "en-US", ru: "ru-RU" }[l] || "az-AZ"; if (!voiceWarned && l === "az") { voiceWarned = true; toast("Bu cihazda Azərbaycan səsi yoxdur, sual yaxın səslə oxunur.") } }
-      u.rate = 0.98; speechSynthesis.speak(u);
-    } catch (e) { }
-  }
-
   /* ======================= İşlər ======================= */
   let jobs = [], jmode = "az", lastSrc = [];
   const cvSet = () => new Set(words([S.d.vez, S.d.bac, S.d.hq, ...S.d.exps.map(e => e.v + " " + e.t), ...S.d.edu.map(e => e.m)].join(" ")));
