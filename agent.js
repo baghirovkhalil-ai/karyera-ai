@@ -386,7 +386,7 @@ Namizəd: ${JSON.stringify(cvBrief(S.d))}
   const h = location.hash.slice(1);
   const autoJobs = () => { if (!$("#jq").value.trim() && !jcat) { if (S.d.vez) $("#jq").value = S.d.vez; else { jcat = "yeni"; $$("#jcats button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.cat === "yeni"))) } } if (!lastSrc.length && !jobs.length) loadJobs() };
   $$('.tabs button[data-t="job"], [data-go="job"]').forEach(x => x.addEventListener("click", autoJobs));
-  if (TABS.includes(h)) tab(h); else if (!isEmpty(S.d)) tab("job");
+  if (TABS.includes(h)) tab(h); else tab("home");
   if (!$("#job").hidden) autoJobs();
   window.addEventListener("hashchange", () => { const x = location.hash.slice(1); if (TABS.includes(x)) tab(x) });
   initAuth();

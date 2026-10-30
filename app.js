@@ -40,7 +40,7 @@ async function ai(p) {
 async function aiJ(p) { const t = await ai(p); const m = t.match(/[\[{][\s\S]*[\]}]/); return JSON.parse(m ? m[0] : t) }
 
 /* ---------- naviqasiya ---------- */
-const TABS = ["cv", "job", "mus", "let", "car", "buy", "log"];
+const TABS = ["home", "cv", "job", "mus", "let", "car", "buy", "log"];
 function tab(t) {
   TABS.forEach(x => $("#" + x).hidden = x !== t);
   $$(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
